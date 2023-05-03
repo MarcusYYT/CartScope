@@ -42,7 +42,7 @@ def distance(city1, city2):
 
 worker = []
 carts = []
-nodes = [[0 for i in range(rows)] for i in range(columns)]
+nodes = [[0 for i in range(columns)] for i in range(rows)]
 
 def printMap():
     # Basic information
@@ -57,10 +57,10 @@ def printMap():
     for i in range(rows):
         col_str = col_str + "{0:<3s}".format(str(i))
     print(col_str)
-    for i in range(rows):
+    for i in range(columns):
         row_str = '{0:<3s}'.format(str(i))
-        for j in range(columns):
-            row_str = row_str + '{0:<3s}'.format(toSymbol(nodes[i][j]))
+        for j in range(rows):
+            row_str = row_str + '{0:<3s}'.format(toSymbol(nodes[j][columns - 1 - i]))
         print(row_str)
 
 
@@ -125,6 +125,7 @@ def open_settings():
     global worker
     global carts
     global rows
+    global columns
     global nodes
     global cart_num
     if num == 1:
@@ -164,7 +165,8 @@ def open_settings():
 
 def main():
     # Generate random data before running
-    generateRandomData()
+    # generateRandomData()
+    loadFromFile()
 
     while True:
         print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
@@ -206,6 +208,7 @@ def generateRandomData():
 def loadFromFile():
     global worker
     worker = [0, 0]
+    global nodes
     nodes[0][0] = 1
     f = open('data.txt', 'r')
     text = f.readlines()
@@ -221,20 +224,20 @@ def loadFromFile():
         node_x.append(x)
         node_y.append(y)
 
-    max_x = 0
-    max_y = 0
+    # max_x = 0
+    # max_y = 0
+    # for i in range(len(node_x)):
+    #     if node_x[i] > max_x:
+    #         max_x = node_x[i]
+    # for i in range(len(node_y)):
+    #     if node_y[i] > max_y:
+    #         max_y = node_y[i]
+    # rows = max_x
+    # columns = max_y
+    nodes = [[0 for i in range(columns)] for i in range(rows)]
     for i in range(len(node_x)):
-        if node_x[i] > max_x:
-            max_x = node_x[i]
-    for i in range(len(node_y)):
-        if node_y[i] > max_y:
-            max_y = node_y[i]
-    rows = max_x
-    columns = max_y
-    global nodes
-    nodes = [[0 for i in range(rows)] for i in range(columns)]
-    for i in range(len(node_x)):
-        nodes[node_x][node_y] = 2
+        # print(node_x[i], node_y[i])
+        nodes[node_x[i]][node_y[i]] = 2
 
 
 if __name__ == '__main__':
