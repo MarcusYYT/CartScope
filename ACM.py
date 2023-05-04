@@ -125,14 +125,15 @@ def toSymbol(num):
 
 # The function to handle all setting operations
 def open_settings():
-    print("The location of worker is at [0, 0] as default")
-    print("The location of carts are generated randomly")
-    print("The default map size is 5 by 5")
+    print("The location of customer is at [0, 0] as default")
+    # print("The location of carts are generated randomly")
+    # print("The default map size is 5 by 5")
     print("Please input the corresponding number to choose the next step.")
-    print("1 - Input worker location manually")
-    print("2 - Input cart location manually")
-    print("3 - Change map size")
-    print('4 - Set the maximum carts number')
+    print("1 - Input customer location manually")
+    print("2 - Re-input items")
+    # print("2 - Input cart location manually")
+    # print("3 - Change map size")
+    # print('4 - Set the maximum carts number')
     num = eval(input())
     global worker
     global carts
@@ -142,36 +143,43 @@ def open_settings():
     global cart_num
     if num == 1:
         nodes[worker[0]][worker[1]] = 0
-        print("Input the location of worker as x,y. For example 0,0")
+        print("Input the location of customer as x,y. For example 0,0")
         content = input()
         arr = content.split(",")
         x, y = eval(arr[0]), eval(arr[1])
+        if nodes[x][y] == 2:
+            print("You cannot locate on shelves.")
+            return
         nodes[x][y] = 1
         worker = (x, y)
+        print("Customer location changed.")
     elif num == 2:
-        print("The current number of carts in this system is ", cart_num)
-        print("Input the location of", cart_num,  "carts as x,y. For example 1,2")
-        for cart in carts:
-            nodes[cart[0]][cart[1]] = 0
         carts = []
-        for i in range(cart_num):
-            content = input()
-            arr = content.split(",")
-            x, y = eval(arr[0]), eval(arr[1])
-            nodes[x][y] = 2
-            carts.append((x, y))
-    elif num == 3:
-        print('The current map size is', rows, 'by', columns)
-        print('Input the new size number')
-        rows = eval(input())
-        columns = eval(input())
-        carts = []
-        nodes = [[0 for i in range(rows)] for i in range(columns)]
-        # Refresh the data
-        generateRandomData()
-    elif num == 4:
-        print('Input new maximum cart number')
-        cart_num = eval(input())
+        loadItems()
+    # elif num == 2:
+    #     print("The current number of carts in this system is ", cart_num)
+    #     print("Input the location of", cart_num,  "carts as x,y. For example 1,2")
+    #     for cart in carts:
+    #         nodes[cart[0]][cart[1]] = 0
+    #     carts = []
+    #     for i in range(cart_num):
+    #         content = input()
+    #         arr = content.split(",")
+    #         x, y = eval(arr[0]), eval(arr[1])
+    #         nodes[x][y] = 2
+    #         carts.append((x, y))
+    # elif num == 3:
+    #     print('The current map size is', rows, 'by', columns)
+    #     print('Input the new size number')
+    #     rows = eval(input())
+    #     columns = eval(input())
+    #     carts = []
+    #     nodes = [[0 for i in range(rows)] for i in range(columns)]
+    #     # Refresh the data
+    #     generateRandomData()
+    # elif num == 4:
+    #     print('Input new maximum cart number')
+    #     cart_num = eval(input())
     else:
         print("Invalid input! Please input again. ")
 
