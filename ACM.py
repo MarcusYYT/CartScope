@@ -109,6 +109,7 @@ def getCarts():
     for i in range(len(route)-1):
         dis, path = DFS.dfs_shortest_path(nodes, route[i], route[i+1])
         DFS.print_path(path)
+        print('Arrive')
     print(f'Duration: {duration:.8f}s')
 
 
