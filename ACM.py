@@ -2,11 +2,12 @@ import itertools
 import math
 import random
 import time
+import DFS
 
 rows = 40
 columns = 21
 cart_num = 5
-
+items = {}
 
 # Brute force implementation of tsp
 def tsp(cities):
@@ -35,12 +36,11 @@ def tsp(cities):
 
 
 # Calculate the distance between two cities
-def distance(city1, city2):
-    x1, y1 = city1
-    x2, y2 = city2
-    return math.fabs(x1 - x2) + math.fabs(y1 - y2)
+def distance(node1, node2):
+    dis = DFS.dfs_shortest_path(nodes, node1, node2)
+    return dis[0]
 
-worker = []
+worker = ()
 carts = []
 nodes = [[0 for i in range(columns)] for i in range(rows)]
 
@@ -49,26 +49,37 @@ def printMap():
     print('Legend: ')
     print('P - You')
     print('_ - No items')
-    print('C - Cart')
+    print('S - Shelf')
     print('Coordinates are (Row, Col)')
     print()
     # Display of location information
+
+    for i in range(columns):
+        row_str = '{0:<3s}'.format(str(columns - 1 - i))
+        for j in range(rows):
+            row_str = row_str + '{0:<3s}'.format(toSymbol(nodes[j][columns - 1 - i]))
+        print(row_str)
     col_str = "{0:3s}".format('')
     for i in range(rows):
         col_str = col_str + "{0:<3s}".format(str(i))
     print(col_str)
-    for i in range(columns):
-        row_str = '{0:<3s}'.format(str(i))
-        for j in range(rows):
-            row_str = row_str + '{0:<3s}'.format(toSymbol(nodes[j][columns - 1 - i]))
-        print(row_str)
 
+def loadItems():
+    print('Please input the item ids you are purchasing: ')
+    print('input -1 to stop: ')
+    while True:
+        id = eval(input())
+        if id == -1:
+            break
+        print(items[id])
+        pickupLoc = getMappedLoc(items[id])
+        carts.append(pickupLoc)
 
 def getCarts():
     printMap()
     # Choose algorithm
     print('Please choose the algorithm: ')
-    print('1 - Carts Order')
+    print('1 - Items Order')
     print('2 - Brute Force')
     choice = eval(input())
     # The first choice of the algorithm
@@ -76,6 +87,7 @@ def getCarts():
     dis = 0
     # The duration of the running time of the algorithm
     duration = 0.0
+    print(carts)
     if choice == 1:
         t = time.perf_counter()
         route += carts
@@ -89,16 +101,15 @@ def getCarts():
         t = time.perf_counter()
         shortest_route, shortest_dis = tsp(carts)
         duration = time.perf_counter() - t
-        route += (shortest_route)
+        route += shortest_route
         dis += shortest_dis
 
-    print("Route:")
-    print('Move from', worker, "to", route[0])
-    for i in range(len(route) - 1):
-        print("Move from", route[i], "to", route[i + 1])
-    print('Move from', route[len(route) - 1], "to", worker)
+    route.insert(0, worker)
+    route.append(worker)
+    for i in range(len(route)-1):
+        dis, path = DFS.dfs_shortest_path(nodes, route[i], route[i+1])
+        DFS.print_path(path)
     print(f'Duration: {duration:.8f}s')
-    print()
 
 
 # Convert the number expression to String  1 - user; 2 - shelf
@@ -135,7 +146,7 @@ def open_settings():
         arr = content.split(",")
         x, y = eval(arr[0]), eval(arr[1])
         nodes[x][y] = 1
-        worker = [x, y]
+        worker = (x, y)
     elif num == 2:
         print("The current number of carts in this system is ", cart_num)
         print("Input the location of", cart_num,  "carts as x,y. For example 1,2")
@@ -147,7 +158,7 @@ def open_settings():
             arr = content.split(",")
             x, y = eval(arr[0]), eval(arr[1])
             nodes[x][y] = 2
-            carts.append([x, y])
+            carts.append((x, y))
     elif num == 3:
         print('The current map size is', rows, 'by', columns)
         print('Input the new size number')
@@ -163,14 +174,55 @@ def open_settings():
     else:
         print("Invalid input! Please input again. ")
 
+def loadFromFile():
+    global worker
+    worker = (0, 0)
+    global nodes
+    nodes[0][0] = 1
+    f = open('data.txt', 'r')
+    text = f.readlines()
+
+    node_x = []
+    node_y = []
+
+    global items
+    for i in range(len(text) - 1):
+        line = text[i + 1]
+        strs = line.split()
+        x = eval(strs[1])
+        y = eval(strs[2])
+        items[eval(strs[0])] = (x, y)
+        # print(items[eval(strs[0])])
+        node_x.append(math.floor(x))
+        node_y.append(math.floor(y))
+
+    nodes = [[0 for i in range(columns)] for i in range(rows)]
+    for i in range(len(node_x)):
+        # print(node_x[i], node_y[i])
+        nodes[node_x[i]][node_y[i]] = 2
+
+def getMappedLoc(location):
+    x = location[0]
+    y = location[1]
+    if x == 0:
+        return (1, y)
+    if y == 0:
+        return (x, 1)
+    if x == rows:
+        return (x-1, y)
+    if y == columns:
+        return (x, y-1)
+    return (x, y-1)
+
 def main():
     # Generate random data before running
-    # generateRandomData()
+    generateRandomData()
     loadFromFile()
+    loadItems()
 
     while True:
         print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
-        print("1 - Get Carts")
+        print("1 - Get Items")
         print("2 - Settings")
         print("3 - Print Map")
         print("4 - Exit")
@@ -191,7 +243,7 @@ def main():
 
 def generateRandomData():
     global worker
-    worker = [0, 0]
+    worker = (0, 0)
     nodes[0][0] = 1
     cnt = 0
     while cnt < cart_num:
@@ -202,42 +254,9 @@ def generateRandomData():
         if nodes[x][y] != 0:
             continue
         nodes[x][y] = 2
-        carts.append([x, y])
+        # carts.append((x, y))
         cnt += 1
 
-def loadFromFile():
-    global worker
-    worker = [0, 0]
-    global nodes
-    nodes[0][0] = 1
-    f = open('data.txt', 'r')
-    text = f.readlines()
-
-    node_x = []
-    node_y = []
-
-    for i in range(len(text) - 1):
-        line = text[i + 1]
-        strs = line.split()
-        x = math.floor(eval(strs[1]))
-        y = math.floor(eval(strs[2]))
-        node_x.append(x)
-        node_y.append(y)
-
-    # max_x = 0
-    # max_y = 0
-    # for i in range(len(node_x)):
-    #     if node_x[i] > max_x:
-    #         max_x = node_x[i]
-    # for i in range(len(node_y)):
-    #     if node_y[i] > max_y:
-    #         max_y = node_y[i]
-    # rows = max_x
-    # columns = max_y
-    nodes = [[0 for i in range(columns)] for i in range(rows)]
-    for i in range(len(node_x)):
-        # print(node_x[i], node_y[i])
-        nodes[node_x[i]][node_y[i]] = 2
 
 
 if __name__ == '__main__':
