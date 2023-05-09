@@ -1,7 +1,7 @@
 import math
 import random
 import time
-import route
+import route_generator
 import tsp
 
 rows = 40
@@ -76,8 +76,8 @@ def getCarts():
     route.insert(0, worker)
     route.append(worker)
     for i in range(len(route)-1):
-        dis, path = route.dfs_shortest_path(nodes, route[i], route[i + 1])
-        route.print_path(path)
+        dis, path = route_generator.dfs_shortest_path(nodes, route[i], route[i + 1])
+        route_generator.print_path(path)
         print('Arrive')
     print(f'Duration: {duration:.8f}s')
 

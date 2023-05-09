@@ -1,10 +1,10 @@
 # Brute force implementation of tsp
 import itertools
-import route
+import route_generator
 
 # Calculate the distance between two cities
 def distance(nodes, node1, node2):
-    dis = route.dfs_shortest_path(nodes, node1, node2)
+    dis = route_generator.dfs_shortest_path(nodes, node1, node2)
     return dis[0]
 
 def tsp_permutation(worker, nodes, cities):
