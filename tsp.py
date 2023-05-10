@@ -7,9 +7,9 @@ def distance(nodes, node1, node2):
     dis = route_generator.dfs_shortest_path(nodes, node1, node2)
     return dis[0]
 
-def tsp_permutation(worker, nodes, cities):
+def tsp_permutation(worker, nodes, items):
     # Generate all possible permutations of the cities
-    permutations = itertools.permutations(cities)
+    permutations = itertools.permutations(items)
 
     # Initialize variables for the shortest distance and route
     shortest_distance = float('inf')
@@ -30,3 +30,12 @@ def tsp_permutation(worker, nodes, cities):
             shortest_route = route
 
     return shortest_route, shortest_distance
+
+def tsp_order(worker, nodes, items):
+    dis = 0
+    route += carts
+    dis += distance(worker, carts[0])
+    for i in range(len(carts)-1):
+        dis += distance(carts[i], carts[i+1])
+    dis += distance(worker, carts[len(carts)-1])
+    return route, dis

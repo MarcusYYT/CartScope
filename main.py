@@ -59,12 +59,10 @@ def getCarts():
     print(carts)
     if choice == 1:
         t = time.perf_counter()
-        # route += carts
-        # dis += distance(worker, carts[0])
-        # for i in range(len(carts)-1):
-        #     dis += distance(carts[i], carts[i+1])
-        # dis += distance(worker, carts[len(carts)-1])
-        # duration = time.perf_counter() - t
+        shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, carts)
+        duration = time.perf_counter() - t
+        route += shortest_route
+        dis += shortest_dis
     elif choice == 2:
         # Output the route information
         t = time.perf_counter()
