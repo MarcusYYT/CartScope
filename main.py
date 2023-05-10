@@ -180,8 +180,8 @@ def loadFromFile():
         nodes[node_x[i]][node_y[i]] = 2
 
 def getMappedLoc(location):
-    x = location[0]
-    y = location[1]
+    x = Math.floor(location[0])
+    y = Math.floor(location[1])
     if x == 0:
         return (1, y)
     if y == 0:
