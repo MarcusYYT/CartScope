@@ -32,10 +32,11 @@ def tsp_permutation(worker, nodes, items):
     return shortest_route, shortest_distance
 
 def tsp_order(worker, nodes, items):
+    route = []
     dis = 0
-    route += carts
-    dis += distance(worker, carts[0])
-    for i in range(len(carts)-1):
-        dis += distance(carts[i], carts[i+1])
-    dis += distance(worker, carts[len(carts)-1])
+    route += items
+    dis += distance(nodes, worker, items[0])
+    for i in range(len(items)-1):
+        dis += distance(nodes, items[i], items[i+1])
+    dis += distance(nodes, worker, items[len(items)-1])
     return route, dis
