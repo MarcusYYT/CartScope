@@ -4,7 +4,7 @@ import route_generator
 
 # Calculate the distance between two cities
 def distance(nodes, node1, node2):
-    dis = route_generator.dfs_shortest_path(nodes, node1, node2)
+    dis = route_generator.dijkstra(nodes, node1, node2)
     return dis[0]
 
 def tsp_permutation(worker, nodes, items):

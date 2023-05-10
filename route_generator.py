@@ -20,9 +20,10 @@ def dfs_shortest_path(grid, start, goal):
 
     # Create a deque to keep track of the path and push the start point
     path = deque([(start, 0, [])])
-
+    cnt = 0
     # Loop until the deque is empty
     while path:
+        cnt += 1
         # Get the current point, its distance from start and its path
         point, distance, path_taken = path.popleft()
 
@@ -40,9 +41,50 @@ def dfs_shortest_path(grid, start, goal):
             if is_valid_point(next_point, rows, cols) and next_point not in visited and not is_obstacle(grid, next_point):
                 # Add the neighboring point to the path with its distance from start and path taken
                 path.append((next_point, distance + 1, path_taken + [point]))
-
+        if cnt%1000==0:
+            print(cnt)
+            print(len(visited))
     # If the goal is not found, return None and an empty path
     return None, []
+
+
+import heapq
+
+
+def dijkstra(map, start, end):
+    rows, cols = len(map), len(map[0])
+    dist = [[float('inf') for _ in range(cols)] for _ in range(rows)]
+    visited = [[False for _ in range(cols)] for _ in range(rows)]
+    parent = [[None for _ in range(cols)] for _ in range(rows)]
+
+    pq = [(0, start)]
+    dist[start[0]][start[1]] = 0
+
+    while pq:
+        d, (r, c) = heapq.heappop(pq)
+        if visited[r][c]:
+            continue
+        visited[r][c] = True
+        if (r, c) == end:
+            route = []
+            while (r, c) != start:
+                route.append((r, c))
+                r, c = parent[r][c]
+            route.append(start)
+            route.reverse()
+            return d, route
+
+        for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and not visited[nr][nc] and map[nr][nc] != 2:
+                new_dist = d + map[nr][nc]
+                if new_dist < dist[nr][nc]:
+                    dist[nr][nc] = new_dist
+                    parent[nr][nc] = (r, c)
+                    heapq.heappush(pq, (new_dist, (nr, nc)))
+
+    return -1, []  # no path found
+
 
 def is_valid_point(point, rows, cols):
     """

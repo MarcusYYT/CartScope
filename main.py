@@ -74,9 +74,9 @@ def getCarts():
     route.insert(0, worker)
     route.append(worker)
     for i in range(len(route)-1):
-        dis, path = route_generator.dfs_shortest_path(nodes, route[i], route[i + 1])
+        dis, path = route_generator.dijkstra(nodes, route[i], route[i + 1])
         route_generator.print_path(path)
-        print('Arrive')
+        print('Please pick up the item at', route[i+1])
     print(f'Duration: {duration:.8f}s')
 
 
