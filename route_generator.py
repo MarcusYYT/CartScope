@@ -27,7 +27,7 @@ def dijkstra(map, start, end):
         for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
             nr, nc = r + dr, c + dc
             if is_valid_point((nr, nc), rows, cols) and not visited[nr][nc] and not is_obstacle(map, (nr, nc)):
-                new_dist = d + map[nr][nc]
+                new_dist = d + 1
                 if new_dist < dist[nr][nc]:
                     dist[nr][nc] = new_dist
                     parent[nr][nc] = (r, c)

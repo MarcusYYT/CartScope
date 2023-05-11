@@ -114,7 +114,7 @@ def toSymbol(num):
 def open_settings():
     print("The location of customer is at [0, 0] as default")
     print("Please input the corresponding number to choose the next step.")
-    print("1 - Input customer location manually")
+    print("1 - Input worker location manually")
     print("2 - Re-input items")
 
     num = eval(input())
@@ -126,7 +126,7 @@ def open_settings():
     global item_num
     if num == 1:
         nodes[worker[0]][worker[1]] = 0
-        print("Input the location of customer as x,y. For example 0,0")
+        print("Input the location of worker as x,y. For example 0,0")
         content = input()
         arr = content.split(",")
         x, y = eval(arr[0]), eval(arr[1])
@@ -135,7 +135,7 @@ def open_settings():
             return
         nodes[x][y] = 1
         worker = (x, y)
-        print("Customer location changed.")
+        print("Worker location changed.")
     elif num == 2:
         carts_list = []
         loadItems()
