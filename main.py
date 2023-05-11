@@ -3,6 +3,7 @@ import random
 import time
 import route_generator
 import tsp
+import running_time_history_logger
 
 rows = 40
 columns = 21
@@ -64,7 +65,7 @@ def getItems():
     print('Please choose the algorithm: ')
     print('1 - Items Order')
     print('2 - Brute Force')
-    calculateRunningTime(len(carts_list))
+    running_time_history_logger.calculateRunningTime(len(carts_list))
     choice = eval(input())
     # The first choice of the algorithm
     route = []
@@ -94,31 +95,10 @@ def getItems():
         if i != len(route) - 2:
             print('Please pick up the items of id', item_ids[route[i + 1]])
     print(f'Duration: {duration:.8f}s')
-    with open('running_time_history.txt', 'a') as file:
-        # file.write(choice + ',' + len(carts_list) + ',' + duration + '\n')
-        file.write(f'{choice},{len(carts_list)},{duration}\n')
+    running_time_history_logger.log(choice, len(carts_list), duration)
 
 
 
-def calculateRunningTime(itemNum):
-    f = open('running_time_history.txt', 'r')
-    logs = f.readlines()
-    coCount = 0
-    coTime = 0
-    bfCount = 0
-    bfTime = 0
-    for log in logs:
-        log_str = log.split(',')
-        if log_str[0] == '1' and log_str[1] == str(itemNum):
-            coCount += 1
-            coTime += float(log_str[2])
-        if log_str[0] == '2' and log_str[1] == str(itemNum):
-            bfCount += 1
-            bfTime += float(log_str[2])
-    if bfCount == 0 or coCount == 0:
-        return
-
-    print(f'Duration time estimation: \nIn this loop of {itemNum} locations to drop by, estimated running time will be \n{(coTime/coCount)}s using Carts Order algorithm, \n{bfTime/bfCount}s using Brute Froce Algorithm.')
 
 # Convert the number expression to String  1 - user; 2 - shelf
 def toSymbol(num):
@@ -163,6 +143,7 @@ def open_settings():
         print("Invalid input! Please input again. ")
 
 
+# Load data file into list
 def loadFromFile():
     global worker
     worker = (0, 0)
@@ -190,7 +171,7 @@ def loadFromFile():
         # print(node_x[i], node_y[i])
         nodes[node_x[i]][node_y[i]] = 2
 
-
+# Map the item location to a accessible lane position
 def getMappedLoc(location):
     x = math.floor(location[0])
     y = math.floor(location[1])
