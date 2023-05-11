@@ -3,7 +3,6 @@ import random
 import time
 import route_generator
 import tsp
-import adjacent_matrix
 
 rows = 40
 columns = 21
@@ -212,7 +211,6 @@ def main():
     generateRandomData()
     loadFromFile()
     loadItems()
-    matrix = adjacent_matrix.adjacency_matrix(nodes)
 
     while True:
         print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
