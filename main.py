@@ -88,7 +88,6 @@ def getItems():
 
     route.insert(0, worker)
     route.append(worker)
-    print(route)
     for i in range(len(route) - 1):
         dis, path = route_generator.dijkstra(nodes, route[i], route[i + 1])
         route_generator.print_path(path)
