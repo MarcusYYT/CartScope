@@ -26,7 +26,7 @@ def dijkstra(map, start, end):
 
         for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
             nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and not visited[nr][nc] and map[nr][nc] != 2:
+            if is_valid_point((nr, nc), rows, cols) and not visited[nr][nc] and not is_obstacle(map, (nr, nc)):
                 new_dist = d + map[nr][nc]
                 if new_dist < dist[nr][nc]:
                     dist[nr][nc] = new_dist
@@ -49,7 +49,6 @@ def is_obstacle(grid, point):
     """
     row, col = point
     return grid[row][col] == 2
-    return False
 
 def getDir(node1, node2):
     if node1[0]<node2[0]:
