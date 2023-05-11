@@ -6,11 +6,12 @@ import tsp
 
 rows = 40
 columns = 21
-cart_num = 5
+item_num = 5
 items = {}
 
+item_ids = {}
 worker = ()
-carts = []
+carts_list = []
 nodes = [[0 for i in range(columns)] for i in range(rows)]
 
 def printMap():
@@ -36,15 +37,25 @@ def printMap():
 def loadItems():
     print('Please input the item ids you are purchasing: ')
     print('input -1 to stop: ')
+    global carts_list
     while True:
         id = eval(input())
         if id == -1:
             break
         print(items[id])
-        pickupLoc = getMappedLoc(items[id])
-        carts.append(pickupLoc)
 
-def getCarts():
+        pickupLoc = getMappedLoc(items[id])
+        if pickupLoc not in item_ids:
+            item_ids[pickupLoc] = [id]
+        else:
+            item_ids[pickupLoc].append(id)
+        carts_list.append(pickupLoc)
+
+    new_list = list(set(carts_list))
+    carts_list = []
+    carts_list += new_list
+
+def getItems():
     printMap()
     # Choose algorithm
     print('Please choose the algorithm: ')
@@ -56,17 +67,17 @@ def getCarts():
     dis = 0
     # The duration of the running time of the algorithm
     duration = 0.0
-    print(carts)
+    print(carts_list)
     if choice == 1:
         t = time.perf_counter()
-        shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, carts)
+        shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, carts_list)
         duration = time.perf_counter() - t
         route += shortest_route
         dis += shortest_dis
     elif choice == 2:
         # Output the route information
         t = time.perf_counter()
-        shortest_route, shortest_dis = tsp.tsp_permutation(worker, nodes, carts)
+        shortest_route, shortest_dis = tsp.tsp_permutation(worker, nodes, carts_list)
         duration = time.perf_counter() - t
         route += shortest_route
         dis += shortest_dis
@@ -76,7 +87,8 @@ def getCarts():
     for i in range(len(route)-1):
         dis, path = route_generator.dijkstra(nodes, route[i], route[i + 1])
         route_generator.print_path(path)
-        print('Please pick up the item at', route[i+1])
+        if i != len(route)-2:
+            print('Please pick up the items of id', item_ids[route[i+1]])
     print(f'Duration: {duration:.8f}s')
 
 
@@ -93,21 +105,17 @@ def toSymbol(num):
 # The function to handle all setting operations
 def open_settings():
     print("The location of customer is at [0, 0] as default")
-    # print("The location of carts are generated randomly")
-    # print("The default map size is 5 by 5")
     print("Please input the corresponding number to choose the next step.")
     print("1 - Input customer location manually")
     print("2 - Re-input items")
-    # print("2 - Input cart location manually")
-    # print("3 - Change map size")
-    # print('4 - Set the maximum carts number')
+
     num = eval(input())
     global worker
-    global carts
+    global carts_list
     global rows
     global columns
     global nodes
-    global cart_num
+    global item_num
     if num == 1:
         nodes[worker[0]][worker[1]] = 0
         print("Input the location of customer as x,y. For example 0,0")
@@ -121,32 +129,8 @@ def open_settings():
         worker = (x, y)
         print("Customer location changed.")
     elif num == 2:
-        carts = []
+        carts_list = []
         loadItems()
-    # elif num == 2:
-    #     print("The current number of carts in this system is ", cart_num)
-    #     print("Input the location of", cart_num,  "carts as x,y. For example 1,2")
-    #     for cart in carts:
-    #         nodes[cart[0]][cart[1]] = 0
-    #     carts = []
-    #     for i in range(cart_num):
-    #         content = input()
-    #         arr = content.split(",")
-    #         x, y = eval(arr[0]), eval(arr[1])
-    #         nodes[x][y] = 2
-    #         carts.append((x, y))
-    # elif num == 3:
-    #     print('The current map size is', rows, 'by', columns)
-    #     print('Input the new size number')
-    #     rows = eval(input())
-    #     columns = eval(input())
-    #     carts = []
-    #     nodes = [[0 for i in range(rows)] for i in range(columns)]
-    #     # Refresh the data
-    #     generateRandomData()
-    # elif num == 4:
-    #     print('Input new maximum cart number')
-    #     cart_num = eval(input())
     else:
         print("Invalid input! Please input again. ")
 
@@ -205,7 +189,7 @@ def main():
         # Get the input from user, perform the following steps according to the input
         num = eval(input())
         if num == 1:
-            getCarts()
+            getItems()
         elif num == 2:
             open_settings()
         elif num == 3:
@@ -222,7 +206,7 @@ def generateRandomData():
     worker = (0, 0)
     nodes[0][0] = 1
     cnt = 0
-    while cnt < cart_num:
+    while cnt < item_num:
         x = random.randint(0, 4)
         y = random.randint(0, 4)
         if x == 0 and y == 0:
@@ -230,9 +214,7 @@ def generateRandomData():
         if nodes[x][y] != 0:
             continue
         nodes[x][y] = 2
-        # carts.append((x, y))
         cnt += 1
-
 
 
 if __name__ == '__main__':
