@@ -3,6 +3,7 @@ import random
 import time
 import route_generator
 import tsp
+import adjacent_matrix
 
 rows = 40
 columns = 21
@@ -13,6 +14,7 @@ item_ids = {}
 worker = ()
 carts_list = []
 nodes = [[0 for i in range(columns)] for i in range(rows)]
+
 
 def printMap():
     # Basic information
@@ -33,6 +35,7 @@ def printMap():
     for i in range(rows):
         col_str = col_str + "{0:<3s}".format(str(i))
     print(col_str)
+
 
 def loadItems():
     print('Please input the item ids you are purchasing: ')
@@ -55,12 +58,14 @@ def loadItems():
     carts_list = []
     carts_list += new_list
 
+
 def getItems():
     printMap()
     # Choose algorithm
     print('Please choose the algorithm: ')
     print('1 - Items Order')
     print('2 - Brute Force')
+    calculateRunningTime(len(carts_list))
     choice = eval(input())
     # The first choice of the algorithm
     route = []
@@ -84,13 +89,38 @@ def getItems():
 
     route.insert(0, worker)
     route.append(worker)
-    for i in range(len(route)-1):
+    print(route)
+    for i in range(len(route) - 1):
         dis, path = route_generator.dijkstra(nodes, route[i], route[i + 1])
         route_generator.print_path(path)
-        if i != len(route)-2:
-            print('Please pick up the items of id', item_ids[route[i+1]])
+        if i != len(route) - 2:
+            print('Please pick up the items of id', item_ids[route[i + 1]])
     print(f'Duration: {duration:.8f}s')
+    with open('running_time_history.txt', 'a') as file:
+        # file.write(choice + ',' + len(carts_list) + ',' + duration + '\n')
+        file.write(f'{choice},{len(carts_list)},{duration}\n')
 
+
+
+def calculateRunningTime(itemNum):
+    f = open('running_time_history.txt', 'r')
+    logs = f.readlines()
+    coCount = 0
+    coTime = 0
+    bfCount = 0
+    bfTime = 0
+    for log in logs:
+        log_str = log.split(',')
+        if log_str[0] == '1' and log_str[1] == str(itemNum):
+            coCount += 1
+            coTime += float(log_str[2])
+        if log_str[0] == '2' and log_str[1] == str(itemNum):
+            bfCount += 1
+            bfTime += float(log_str[2])
+    if bfCount == 0 or coCount == 0:
+        return
+
+    print(f'Duration time estimation: \nIn this loop of {itemNum} locations to drop by, estimated running time will be \n{(coTime/coCount)}s using Carts Order algorithm, \n{bfTime/bfCount}s using Brute Froce Algorithm.')
 
 # Convert the number expression to String  1 - user; 2 - shelf
 def toSymbol(num):
@@ -134,6 +164,7 @@ def open_settings():
     else:
         print("Invalid input! Please input again. ")
 
+
 def loadFromFile():
     global worker
     worker = (0, 0)
@@ -161,6 +192,7 @@ def loadFromFile():
         # print(node_x[i], node_y[i])
         nodes[node_x[i]][node_y[i]] = 2
 
+
 def getMappedLoc(location):
     x = math.floor(location[0])
     y = math.floor(location[1])
@@ -169,16 +201,18 @@ def getMappedLoc(location):
     if y == 0:
         return (x, 1)
     if x == rows:
-        return (x-1, y)
+        return (x - 1, y)
     if y == columns:
-        return (x, y-1)
-    return (x, y-1)
+        return (x, y - 1)
+    return (x, y - 1)
+
 
 def main():
     # Generate random data before running
     generateRandomData()
     loadFromFile()
     loadItems()
+    matrix = adjacent_matrix.adjacency_matrix(nodes)
 
     while True:
         print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
@@ -199,6 +233,12 @@ def main():
         else:
             print("Invalid input! Please input again. ")
     print("Program exited")
+
+
+def write_array_to_file(array, file_name):
+    with open(file_name, 'w') as file:
+        for row in array:
+            file.write(' '.join(str(x) for x in row) + '\n')
 
 
 def generateRandomData():
