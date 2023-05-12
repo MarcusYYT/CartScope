@@ -52,13 +52,13 @@ def is_obstacle(grid, point):
 
 def getDir(node1, node2):
     if node1[0]<node2[0]:
-        return 'up'
-    elif node1[0]>node2[0]:
-        return 'down'
-    elif node1[1]<node2[1]:
         return 'right'
-    else:
+    elif node1[0]>node2[0]:
         return 'left'
+    elif node1[1]<node2[1]:
+        return 'up'
+    else:
+        return 'down'
 
 def print_path(path):
     pre_node = path[0]
