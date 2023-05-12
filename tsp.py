@@ -1,14 +1,15 @@
-# Brute force implementation of tsp
+
 import itertools
 import route_generator
 
-# Calculate the distance between two cities
+# Calculate the distance between two nodes
 def distance(nodes, node1, node2):
     dis = route_generator.dijkstra(nodes, node1, node2)
     return dis[0]
 
+# Brute force implementation of tsp
 def tsp_permutation(worker, nodes, items):
-    # Generate all possible permutations of the cities
+    # Generate all possible permutations of the nodes
     permutations = itertools.permutations(items)
 
     # Initialize variables for the shortest distance and route
@@ -20,7 +21,7 @@ def tsp_permutation(worker, nodes, items):
         route_distance = 0
         for i in range(len(route) - 1):
             route_distance += distance(nodes, route[i], route[i + 1])
-        # Add the distance from the last city back to the first city
+        # Add the distance from the last node back to the first node
         route_distance += distance(nodes, worker, route[0])
         route_distance += distance(nodes, worker, route[len(route)-1])
 
@@ -31,6 +32,7 @@ def tsp_permutation(worker, nodes, items):
 
     return shortest_route, shortest_distance
 
+# Simple implementation which only follows the initial order to pick up items
 def tsp_order(worker, nodes, items):
     route = []
     dis = 0

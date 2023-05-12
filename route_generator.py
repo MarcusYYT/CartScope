@@ -23,7 +23,7 @@ def dijkstra(map, start, end):
             route.append(start)
             route.reverse()
             return d, route
-
+        # Try to move in 4 directions
         for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
             nr, nc = r + dr, c + dc
             if is_valid_point((nr, nc), rows, cols) and not visited[nr][nc] and not is_obstacle(map, (nr, nc)):
@@ -63,6 +63,7 @@ def getDir(node1, node2):
 def print_path(path):
     pre_node = path[0]
     for i in range(1, len(path)):
+        # Ignore the nodes with the same direction
         if path[i-1][0]==path[i][0] and pre_node[0]==path[i][0]:
             continue
         if path[i-1][1]==path[i][1] and pre_node[1]==path[i][1]:
@@ -70,7 +71,3 @@ def print_path(path):
         print('Move', getDir(pre_node, path[i-1]), 'from ', pre_node, 'to', path[i-1])
         pre_node = path[i-1]
     print('Move', getDir(pre_node, path[len(path)-1]), 'from ', pre_node, 'to', path[len(path)-1])
-
-
-start = (0, 1)
-goal = (4, 5)
