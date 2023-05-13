@@ -5,17 +5,22 @@ import route_generator
 import tsp
 import running_time_history_logger
 
+# Row and column of the map
 rows = 40
 columns = 21
-item_num = 5
-items = {}
 
+# Dictionary to lookup all the item locations on shelves by id, in format { id, (x, y) }. x, y are integers
+items = {}
+# Dictionary to lookup ids by item pickup locations, in format { (x, y), id }
 item_ids = {}
+# Position of worker (x, y)
 worker = ()
-carts_list = []
+# List to store pickup locations
+pickuploc_list = []
+# 2-d list to store the map of warehouse. 0 for none, 1 for worker, 2 for shelves
 nodes = [[0 for i in range(columns)] for i in range(rows)]
 
-
+# Print map function
 def printMap():
     # Basic information
     print('Legend: ')
@@ -36,53 +41,56 @@ def printMap():
         col_str = col_str + "{0:<3s}".format(str(i))
     print(col_str)
 
-
-def loadItems():
+# Get Items from user input
+def inputItems():
     print('Please input the item ids you are purchasing: ')
     print('input -1 to stop: ')
-    global carts_list
+    global pickuploc_list
     while True:
         id = eval(input())
         if id == -1:
             break
         print(items[id])
-
+        # Merge items at same shelves
         pickupLoc = getMappedLoc(items[id])
         if pickupLoc not in item_ids:
             item_ids[pickupLoc] = [id]
         else:
             item_ids[pickupLoc].append(id)
-        carts_list.append(pickupLoc)
+        pickuploc_list.append(pickupLoc)
 
-    new_list = list(set(carts_list))
-    carts_list = []
-    carts_list += new_list
+    new_list = list(set(pickuploc_list))
+    pickuploc_list = []
+    pickuploc_list += new_list
 
-
+# Function 1. Get Items
 def getItems():
     printMap()
     # Choose algorithm
     print('Please choose the algorithm: ')
     print('1 - Items Order')
     print('2 - Brute Force')
-    running_time_history_logger.calculateRunningTime(len(carts_list))
+    running_time_history_logger.calculateRunningTime(len(pickuploc_list))
     choice = eval(input())
     # The first choice of the algorithm
     route = []
     dis = 0
     # The duration of the running time of the algorithm
     duration = 0.0
-    print(carts_list)
+    print(pickuploc_list)
     if choice == 1:
+        # Start logging the duration of the running time of the algorithm
         t = time.perf_counter()
-        shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, carts_list)
+        shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, pickuploc_list)
+        # End logging the duration of the running time of the algorithm
         duration = time.perf_counter() - t
         route += shortest_route
         dis += shortest_dis
     elif choice == 2:
-        # Output the route information
+        # Start logging the duration of the running time of the algorithm
         t = time.perf_counter()
-        shortest_route, shortest_dis = tsp.tsp_permutation(worker, nodes, carts_list)
+        shortest_route, shortest_dis = tsp.tsp_permutation(worker, nodes, pickuploc_list)
+        # End logging the duration of the running time of the algorithm
         duration = time.perf_counter() - t
         route += shortest_route
         dis += shortest_dis
@@ -95,7 +103,7 @@ def getItems():
         if i != len(route) - 2:
             print('Please pick up the items of id', item_ids[route[i + 1]])
     print(f'Duration: {duration:.8f}s')
-    running_time_history_logger.log(choice, len(carts_list), duration)
+    running_time_history_logger.log(choice, len(pickuploc_list), duration)
 
 
 
@@ -119,17 +127,18 @@ def open_settings():
 
     num = eval(input())
     global worker
-    global carts_list
+    global pickuploc_list
     global rows
     global columns
     global nodes
-    global item_num
+
     if num == 1:
         nodes[worker[0]][worker[1]] = 0
         print("Input the location of worker as x,y. For example 0,0")
         content = input()
         arr = content.split(",")
         x, y = eval(arr[0]), eval(arr[1])
+        # Prevent locations of shelves
         if nodes[x][y] == 2:
             print("You cannot locate on shelves.")
             return
@@ -137,8 +146,8 @@ def open_settings():
         worker = (x, y)
         print("Worker location changed.")
     elif num == 2:
-        carts_list = []
-        loadItems()
+        pickuploc_list = []
+        inputItems()
     else:
         print("Invalid input! Please input again. ")
 
@@ -146,14 +155,15 @@ def open_settings():
 # Load data file into list
 def loadFromFile():
     global worker
-    worker = (0, 0)
+
     global nodes
-    nodes[0][0] = 1
+
     f = open('data.txt', 'r')
     text = f.readlines()
 
     node_x = []
     node_y = []
+    nodes = [[0 for i in range(columns)] for i in range(rows)]
 
     global items
     for i in range(len(text) - 1):
@@ -166,10 +176,13 @@ def loadFromFile():
         node_x.append(math.floor(x))
         node_y.append(math.floor(y))
 
-    nodes = [[0 for i in range(columns)] for i in range(rows)]
     for i in range(len(node_x)):
         # print(node_x[i], node_y[i])
         nodes[node_x[i]][node_y[i]] = 2
+
+    # Initialize worker position to (0,0)
+    worker = (0, 0)
+    nodes[0][0] = 1
 
 # Map the item location to a accessible lane position
 def getMappedLoc(location):
@@ -188,9 +201,9 @@ def getMappedLoc(location):
 
 def main():
     # Generate random data before running
-    generateRandomData()
+    # generateRandomData()
     loadFromFile()
-    loadItems()
+    inputItems()
 
     while True:
         print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
@@ -217,23 +230,6 @@ def write_array_to_file(array, file_name):
     with open(file_name, 'w') as file:
         for row in array:
             file.write(' '.join(str(x) for x in row) + '\n')
-
-
-def generateRandomData():
-    global worker
-    worker = (0, 0)
-    nodes[0][0] = 1
-    cnt = 0
-    while cnt < item_num:
-        x = random.randint(0, 4)
-        y = random.randint(0, 4)
-        if x == 0 and y == 0:
-            continue
-        if nodes[x][y] != 0:
-            continue
-        nodes[x][y] = 2
-        cnt += 1
-
 
 if __name__ == '__main__':
     main()
