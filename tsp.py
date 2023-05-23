@@ -7,38 +7,44 @@ def distance(nodes, node1, node2):
     dis = route_generator.dijkstra(nodes, node1, node2)
     return dis[0]
 
-# Brute force implementation of tsp
-def tsp_permutation(worker, nodes, items):
-    # Generate all possible permutations of the nodes
-    permutations = itertools.permutations(items)
+# # Brute force implementation of tsp
+# def tsp_permutation(worker, nodes, items):
+#     # Generate all possible permutations of the nodes
+#     permutations = itertools.permutations(items)
+#
+#     # Initialize variables for the shortest distance and route
+#     shortest_distance = float('inf')
+#     shortest_route = None
+#
+#     # Iterate over each permutation and calculate its distance
+#     for route in permutations:
+#         route_distance = 0
+#         for i in range(len(route) - 1):
+#             route_distance += distance(nodes, route[i], route[i + 1])
+#         # Add the distance from the last node back to the first node
+#         route_distance += distance(nodes, worker, route[0])
+#         route_distance += distance(nodes, worker, route[len(route)-1])
+#
+#         # Update the shortest distance and route if necessary
+#         if route_distance < shortest_distance:
+#             shortest_distance = route_distance
+#             shortest_route = route
+#
+#     return shortest_route, shortest_distance
+#
+# # Simple implementation which only follows the initial order to pick up items
+# def tsp_order(worker, nodes, items):
+#     route = []
+#     dis = 0
+#     route += items
+#     dis += distance(nodes, worker, items[0])
+#     for i in range(len(items)-1):
+#         dis += distance(nodes, items[i], items[i+1])
+#     dis += distance(nodes, worker, items[len(items)-1])
+#     return route, dis
 
-    # Initialize variables for the shortest distance and route
-    shortest_distance = float('inf')
-    shortest_route = None
+def branch_tsp(worker, nodes, items):
+    return None, 0
 
-    # Iterate over each permutation and calculate its distance
-    for route in permutations:
-        route_distance = 0
-        for i in range(len(route) - 1):
-            route_distance += distance(nodes, route[i], route[i + 1])
-        # Add the distance from the last node back to the first node
-        route_distance += distance(nodes, worker, route[0])
-        route_distance += distance(nodes, worker, route[len(route)-1])
-
-        # Update the shortest distance and route if necessary
-        if route_distance < shortest_distance:
-            shortest_distance = route_distance
-            shortest_route = route
-
-    return shortest_route, shortest_distance
-
-# Simple implementation which only follows the initial order to pick up items
-def tsp_order(worker, nodes, items):
-    route = []
-    dis = 0
-    route += items
-    dis += distance(nodes, worker, items[0])
-    for i in range(len(items)-1):
-        dis += distance(nodes, items[i], items[i+1])
-    dis += distance(nodes, worker, items[len(items)-1])
-    return route, dis
+def greedy_tsp(worker, nodes, items):
+    return None, 0
