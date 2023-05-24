@@ -1,8 +1,9 @@
-
-import itertools
 import sys
-
+import copy
+from queue import PriorityQueue
 import route_generator
+
+INF = sys.maxsize
 
 # Calculate the distance between two nodes
 def distance(nodes, node1, node2):
@@ -46,7 +47,29 @@ def distance(nodes, node1, node2):
 #     return route, dis
 
 def branch_tsp(worker, nodes, items):
-    return None, 0
+    n = len(items)
+    dist_matrix = [[INF]*(n+1) for _ in range(n+1)]
+
+    for i in range(n):
+        item = items[i]
+        dist = distance(nodes, worker, item)
+        dist_matrix[0][i+1] = dist
+        dist_matrix[i+1][0] = dist
+
+    for i in range(1, n+1):
+        for j in range(i + 1, n+1):
+            item1 = items[i-1]
+            item2 = items[j-1]
+            dist = distance(nodes, item1, item2)
+            dist_matrix[i][j] = dist
+            dist_matrix[j][i] = dist
+    route, dis = tsp_branch_bound(dist_matrix)
+    route.remove(0)
+    list = []
+    for item in route:
+        list.append(items[item-1])
+    print(list, dis)
+    return list, dis
 
 def greedy_tsp(worker, nodes, items):
     route = []
@@ -72,3 +95,92 @@ def greedy_tsp(worker, nodes, items):
         dis += cur_dis
         del item_set[cur_item]
     return route, dis
+
+def reduce_matrix(matrix):
+    # The value of this reduction
+    res = 0
+    reduced_matrix = []
+    for row in matrix:
+        min_val = min(row)
+        reduced_row = [INF] * len(row)
+        if min_val == INF:
+            reduced_matrix.append(reduced_row)
+            continue
+        for i in range(len(row)):
+            if row[i]==INF:
+                continue
+            reduced_row[i] = row[i] - min_val
+        reduced_matrix.append(reduced_row)
+        res += min_val
+    # Perform column reduction
+    num_cols = len(matrix[0])
+    col_mins = [INF] * num_cols
+    for row in reduced_matrix:
+        for j, val in enumerate(row):
+            if val < col_mins[j]:
+                col_mins[j] = val
+    for i in range(len(col_mins)):
+        if col_mins[i] == INF:
+            continue
+        res += col_mins[i]
+        for j in range(len(col_mins)):
+            reduced_matrix[j][i] -= col_mins[i]
+    return res, reduced_matrix
+
+def tsp_branch_bound(dist_matrix):
+    n = len(dist_matrix)
+    bound, matrix = reduce_matrix(dist_matrix)
+    pq = PriorityQueue()
+    root = {
+        'bound': bound,
+        'matrix': matrix,
+        'path': {0},
+        'num': 0
+    }
+    pq.put(root)
+    while not pq.empty():
+        size = pq.qsize()
+        curBound = INF
+        arr = []
+        for i in range(size):
+            node = pq.get()
+            if len(node['path']) == n:
+                return node['path'], node['bound']
+            for j in range(n):
+                if j != node['num'] and j not in node['path']:
+                    newBound, newMatrix = move(node['matrix'], node['num'], j)
+                    newVal = node['bound']+dist_matrix[node['num']][j]+newBound
+                    if newVal < curBound:
+                        curBound = newVal
+                        arr.clear()
+                        newPath = copy.deepcopy(node['path'])
+                        newPath.add(j)
+                        arr.append([j, newMatrix, newPath])
+                    elif newBound == curBound:
+                        newPath = copy.deepcopy(node['path'])
+                        newPath.add(j)
+                        arr.append([j, newMatrix, newPath])
+        for i in range(len(arr)):
+            pq.put({
+                'bound': curBound,
+                'matrix': arr[i][1],
+                'path': arr[i][2],
+                'num': arr[i][0]
+            })
+
+    return None, -1
+
+
+def move(matrix, x, y):
+    moveMatrix = list(matrix)
+    for i in range(len(matrix)):
+        moveMatrix[x][i] = INF
+        moveMatrix[i][y] = INF
+    moveMatrix[y][x] = INF
+    # print(moveMatrix)
+    return reduce_matrix(moveMatrix)
+
+
+
+
+
