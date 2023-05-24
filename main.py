@@ -4,6 +4,7 @@ import time
 import route_generator
 import tsp
 import running_time_history_logger
+import copy
 
 # Row and column of the map
 rows = 40
@@ -19,6 +20,8 @@ worker = ()
 pickuploc_list = []
 # 2-d list to store the map of warehouse. 0 for none, 1 for worker, 2 for shelves
 nodes = [[0 for i in range(columns)] for i in range(rows)]
+# 2-d list to store the temp navigation map. 0 for none, 1 for worker, 2 for shelves, 3 for direction routes
+directed_map = [[0 for i in range(columns)] for i in range(rows)]
 
 # Print map function
 def printMap():
@@ -38,8 +41,46 @@ def printMap():
         print(row_str)
     col_str = "{0:3s}".format('')
     for i in range(rows):
+        col_str = col_str + "{0:<4s}".format(str(i))
+    print(col_str)
+
+# add directions on a Map
+def addDirections(path):
+    global directed_map
+    # Display of location information
+    for i in range(len(path)-1):
+        if path[i][0] == path[i+1][0]:
+            if path[i][1] < path[i+1][1]:
+                for j in range(path[i+1][1]-path[i][1]):
+                     directed_map[path[i][0]][path[i][1]+j] = 3
+            else:
+                for j in range(path[i][1]-path[i+1][1]):
+                     directed_map[path[i+1][0]][path[i+1][1]+j] = 4
+        else:
+            if path[i][0] < path[i+1][0]:
+                for j in range(path[i+1][0]-path[i][0]):
+                    directed_map[path[i][0]+j][path[i][1]] = 6
+            else:
+                for j in range(path[i][0]-path[i+1][0]):
+                    directed_map[path[i+1][0]+j][path[i+1][1]] = 5
+
+# Print direction map
+def printDirections():
+    global directed_map
+    for i in range(columns):
+        row_str = '{0:<3s}'.format(str(columns - 1 - i))
+        for j in range(rows):
+            row_str = row_str + '{0:<3s}'.format(toSymbol(directed_map[j][columns - 1 - i]))
+        print(row_str)
+    col_str = "{0:3s}".format('')
+    for i in range(rows):
         col_str = col_str + "{0:<3s}".format(str(i))
     print(col_str)
+
+# Direction map initialization
+def init_directions():
+    global directed_map
+    directed_map = copy.deepcopy(nodes)
 
 # Get Items from user input
 def inputItems():
@@ -68,8 +109,10 @@ def getItems():
     printMap()
     # Choose algorithm
     print('Please choose the algorithm: ')
-    print('1 - Items Order')
-    print('2 - Brute Force')
+    # print('1 - Items Order')
+    # print('2 - Brute Force')
+    print('1 - Branch and Bound')
+    print('2 - Greedy')
     running_time_history_logger.calculateRunningTime(len(pickuploc_list))
     choice = eval(input())
     # The first choice of the algorithm
@@ -78,30 +121,49 @@ def getItems():
     # The duration of the running time of the algorithm
     duration = 0.0
     print(pickuploc_list)
+    # if choice == 1:
+    #     # Start logging the duration of the running time of the algorithm
+    #     t = time.perf_counter()
+    #     shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, pickuploc_list)
+    #     # End logging the duration of the running time of the algorithm
+    #     duration = time.perf_counter() - t
+    #     route += shortest_route
+    #     dis += shortest_dis
+    # elif choice == 2:
+    #     # Start logging the duration of the running time of the algorithm
+    #     t = time.perf_counter()
+    #     shortest_route, shortest_dis = tsp.tsp_permutation(worker, nodes, pickuploc_list)
+    #     # End logging the duration of the running time of the algorithm
+    #     duration = time.perf_counter() - t
+    #     route += shortest_route
+    #     dis += shortest_dis
     if choice == 1:
-        # Start logging the duration of the running time of the algorithm
         t = time.perf_counter()
-        shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, pickuploc_list)
-        # End logging the duration of the running time of the algorithm
+        # shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, pickuploc_list)
+        shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list)
         duration = time.perf_counter() - t
         route += shortest_route
         dis += shortest_dis
     elif choice == 2:
-        # Start logging the duration of the running time of the algorithm
         t = time.perf_counter()
-        shortest_route, shortest_dis = tsp.tsp_permutation(worker, nodes, pickuploc_list)
-        # End logging the duration of the running time of the algorithm
+        shortest_route, shortest_dis = tsp.greedy_tsp(worker, nodes, pickuploc_list)
         duration = time.perf_counter() - t
         route += shortest_route
         dis += shortest_dis
-
+    # printDirections(route)
     route.insert(0, worker)
     route.append(worker)
+    init_directions()
     for i in range(len(route) - 1):
         dis, path = route_generator.dijkstra(nodes, route[i], route[i + 1])
         route_generator.print_path(path)
+        addDirections(path)
         if i != len(route) - 2:
             print('Please pick up the items of id', item_ids[route[i + 1]])
+            printDirections()
+            input('Please press enter to go to next item')
+            init_directions()
+
     print(f'Duration: {duration:.8f}s')
     running_time_history_logger.log(choice, len(pickuploc_list), duration)
 
@@ -111,12 +173,19 @@ def getItems():
 # Convert the number expression to String  1 - user; 2 - shelf
 def toSymbol(num):
     if num == 0:
-        return '_'
+        return '◽'
     elif num == 1:
-        return 'P'
+        return '⚫'
     elif num == 2:
-        return 'S'
-
+        return '⬛'
+    elif num == 3:
+        return '▲'
+    elif num == 4:
+        return '▼'
+    elif num == 5:
+        return '◀'
+    elif num == 6:
+        return '▶'
 
 # The function to handle all setting operations
 def open_settings():
@@ -155,7 +224,6 @@ def open_settings():
 # Load data file into list
 def loadFromFile():
     global worker
-
     global nodes
 
     f = open('data.txt', 'r')

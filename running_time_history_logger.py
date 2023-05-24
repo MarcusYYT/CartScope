@@ -14,18 +14,24 @@ def calculateRunningTime(itemNum):
     coTime = 0
     bfCount = 0
     bfTime = 0
+    bbCount = 0
+    bbTime = 0
+    gCount = 0
+    gTime = 0
+
     for log in logs:
         log_str = log.split(',')
+
         if log_str[0] == '1' and log_str[1] == str(itemNum):
-            coCount += 1
-            coTime += float(log_str[2])
+            bbCount += 1
+            bbTime += float(log_str[2])
         if log_str[0] == '2' and log_str[1] == str(itemNum):
-            bfCount += 1
-            bfTime += float(log_str[2])
-    if bfCount == 0 or coCount == 0:
+            gCount += 1
+            gTime += float(log_str[2])
+    if bfCount == 0 or coCount == 0 or bbCount == 0 or gCount == 0:
         return
 
-    print(f'Duration time estimation: \nIn this loop of {itemNum} locations to drop by, estimated running time will be \n{(coTime/coCount)}s using Carts Order algorithm, \n{bfTime/bfCount}s using Brute Froce Algorithm.')
+    print(f'Duration time estimation: \nIn this loop of {itemNum} locations to drop by, estimated running time will be \n{(bbTime/bbCount)}s using Branch & Bound algorithm, \n{gTime/gCount}s using Greedy Algorithm.')
 
 def log(choice, itemNum, duration):
     with open('running_time_history.txt', 'a') as file:
