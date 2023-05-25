@@ -41,7 +41,7 @@ def printMap():
         print(row_str)
     col_str = "{0:3s}".format('')
     for i in range(rows):
-        col_str = col_str + "{0:<4s}".format(str(i))
+        col_str = col_str + "{0:<3s}".format(str(i))
     print(col_str)
 
 # add directions on a Map
@@ -161,19 +161,19 @@ def getItems():
 # Convert the number expression to String  1 - user; 2 - shelf
 def toSymbol(num):
     if num == 0:
-        return '◽'
+        return '.'
     elif num == 1:
-        return '⚫'
+        return 'P'
     elif num == 2:
-        return '⬛'
+        return 'S'
     elif num == 3:
-        return '▲'
+        return '^'
     elif num == 4:
-        return '▼'
+        return 'v'
     elif num == 5:
-        return '◀'
+        return '<'
     elif num == 6:
-        return '▶'
+        return '>'
 
 # The function to handle all setting operations
 def open_settings():
