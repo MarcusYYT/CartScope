@@ -88,17 +88,20 @@ def inputItems():
     print('input -1 to stop: ')
     global pickuploc_list
     while True:
-        id = eval(input())
-        if id == -1:
-            break
-        print(items[id])
-        # Merge items at same shelves
-        pickupLoc = getMappedLoc(items[id])
-        if pickupLoc not in item_ids:
-            item_ids[pickupLoc] = [id]
-        else:
-            item_ids[pickupLoc].append(id)
-        pickuploc_list.append(pickupLoc)
+        try:
+            id = eval(input())
+            if id == -1:
+                break
+            print(items[id])
+            # Merge items at same shelves
+            pickupLoc = getMappedLoc(items[id])
+            if pickupLoc not in item_ids:
+                item_ids[pickupLoc] = [id]
+            else:
+                item_ids[pickupLoc].append(id)
+            pickuploc_list.append(pickupLoc)
+        except:
+            print("Invalid input! Please input again. ")
 
     new_list = list(set(pickuploc_list))
     pickuploc_list = []
@@ -114,59 +117,44 @@ def getItems():
     print('1 - Branch and Bound')
     print('2 - Greedy')
     running_time_history_logger.calculateRunningTime(len(pickuploc_list))
-    choice = eval(input())
-    # The first choice of the algorithm
-    route = []
-    dis = 0
-    # The duration of the running time of the algorithm
-    duration = 0.0
-    print(pickuploc_list)
-    # if choice == 1:
-    #     # Start logging the duration of the running time of the algorithm
-    #     t = time.perf_counter()
-    #     shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, pickuploc_list)
-    #     # End logging the duration of the running time of the algorithm
-    #     duration = time.perf_counter() - t
-    #     route += shortest_route
-    #     dis += shortest_dis
-    # elif choice == 2:
-    #     # Start logging the duration of the running time of the algorithm
-    #     t = time.perf_counter()
-    #     shortest_route, shortest_dis = tsp.tsp_permutation(worker, nodes, pickuploc_list)
-    #     # End logging the duration of the running time of the algorithm
-    #     duration = time.perf_counter() - t
-    #     route += shortest_route
-    #     dis += shortest_dis
-    if choice == 1:
-        t = time.perf_counter()
-        # shortest_route, shortest_dis = tsp.tsp_order(worker, nodes, pickuploc_list)
-        shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list)
-        duration = time.perf_counter() - t
-        route += shortest_route
-        dis += shortest_dis
-    elif choice == 2:
-        t = time.perf_counter()
-        shortest_route, shortest_dis = tsp.greedy_tsp(worker, nodes, pickuploc_list)
-        duration = time.perf_counter() - t
-        route += shortest_route
-        dis += shortest_dis
-    # printDirections(route)
-    route.insert(0, worker)
-    route.append(worker)
-    init_directions()
-    for i in range(len(route) - 1):
-        dis, path = route_generator.dijkstra(nodes, route[i], route[i + 1])
-        route_generator.print_path(path)
-        addDirections(path)
-        if i != len(route) - 2:
-            print('Please pick up the items of id', item_ids[route[i + 1]])
-            printDirections()
-            input('Please press enter to go to next item')
-            init_directions()
+    try:
+        choice = eval(input())
+        # The first choice of the algorithm
+        route = []
+        dis = 0
+        # The duration of the running time of the algorithm
+        duration = 0.0
+        print(pickuploc_list)
+        if choice == 1:
+            t = time.perf_counter()
+            shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list)
+            duration = time.perf_counter() - t
+            route += shortest_route
+            dis += shortest_dis
+        elif choice == 2:
+            t = time.perf_counter()
+            shortest_route, shortest_dis = tsp.greedy_tsp(worker, nodes, pickuploc_list)
+            duration = time.perf_counter() - t
+            route += shortest_route
+            dis += shortest_dis
+        # printDirections(route)
+        route.insert(0, worker)
+        route.append(worker)
+        init_directions()
+        for i in range(len(route) - 1):
+            dis, path = route_generator.dijkstra(nodes, route[i], route[i + 1])
+            route_generator.print_path(path)
+            addDirections(path)
+            if i != len(route) - 2:
+                print('Please pick up the items of id', item_ids[route[i + 1]])
+                printDirections()
+                input('Please press enter to go to next item')
+                init_directions()
 
-    print(f'Duration: {duration:.8f}s')
-    running_time_history_logger.log(choice, len(pickuploc_list), duration)
-
+        print(f'Duration: {duration:.8f}s')
+        running_time_history_logger.log(choice, len(pickuploc_list), duration)
+    except:
+        print("Invalid input! Please input again. ")
 
 
 
@@ -273,24 +261,29 @@ def main():
     loadFromFile()
     inputItems()
 
+
+    print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
+    print("1 - Get Items")
+    print("2 - Settings")
+    print("3 - Print Map")
+    print("4 - Exit")
+    # Get the input from user, perform the following steps according to the input
     while True:
-        print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
-        print("1 - Get Items")
-        print("2 - Settings")
-        print("3 - Print Map")
-        print("4 - Exit")
-        # Get the input from user, perform the following steps according to the input
-        num = eval(input())
-        if num == 1:
-            getItems()
-        elif num == 2:
-            open_settings()
-        elif num == 3:
-            printMap()
-        elif num == 4:
-            break
-        else:
+        try:
+            num = eval(input())
+            if num == 1:
+                getItems()
+            elif num == 2:
+                open_settings()
+            elif num == 3:
+                printMap()
+            elif num == 4:
+                break
+            else:
+                print("Invalid input! Please input again. ")
+        except:
             print("Invalid input! Please input again. ")
+
     print("Program exited")
 
 

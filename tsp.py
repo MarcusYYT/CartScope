@@ -5,10 +5,12 @@ import route_generator
 
 INF = sys.maxsize
 
+
 # Calculate the distance between two nodes
 def distance(nodes, node1, node2):
     dis = route_generator.dijkstra(nodes, node1, node2)
     return dis[0]
+
 
 # # Brute force implementation of tsp
 # def tsp_permutation(worker, nodes, items):
@@ -36,29 +38,30 @@ def distance(nodes, node1, node2):
 #     return shortest_route, shortest_distance
 #
 # # Simple implementation which only follows the initial order to pick up items
-# def tsp_order(worker, nodes, items):
-#     route = []
-#     dis = 0
-#     route += items
-#     dis += distance(nodes, worker, items[0])
-#     for i in range(len(items)-1):
-#         dis += distance(nodes, items[i], items[i+1])
-#     dis += distance(nodes, worker, items[len(items)-1])
-#     return route, dis
+def tsp_order(worker, nodes, items):
+    route = []
+    dis = 0
+    route += items
+    dis += distance(nodes, worker, items[0])
+    for i in range(len(items) - 1):
+        dis += distance(nodes, items[i], items[i + 1])
+    dis += distance(nodes, worker, items[len(items) - 1])
+    return route, dis
+
 
 def branch_tsp(worker, nodes, items):
     n = len(items)
-    dist_matrix = [[INF]*(n+1) for _ in range(n+1)]
+    dist_matrix = [[INF] * (n + 1) for _ in range(n + 1)]
     # Construct the distance matrix
     for i in range(n):
         item = items[i]
         dist = distance(nodes, worker, item)
-        dist_matrix[0][i+1] = dist
-        dist_matrix[i+1][0] = dist
-    for i in range(1, n+1):
-        for j in range(i + 1, n+1):
-            item1 = items[i-1]
-            item2 = items[j-1]
+        dist_matrix[0][i + 1] = dist
+        dist_matrix[i + 1][0] = dist
+    for i in range(1, n + 1):
+        for j in range(i + 1, n + 1):
+            item1 = items[i - 1]
+            item2 = items[j - 1]
             dist = distance(nodes, item1, item2)
             dist_matrix[i][j] = dist
             dist_matrix[j][i] = dist
@@ -68,15 +71,17 @@ def branch_tsp(worker, nodes, items):
     list = []
     # Convert the id of items into specific locations
     for item in route:
-        list.append(items[item-1])
+        list.append(items[item - 1])
     print(list, dis)
     return list, dis
+
 
 def greedy_tsp(worker, nodes, items):
     route = []
     dis = 0
-    cur_node  = worker
+    cur_node = worker
     item_set = {}
+    start_size = sys.getsizeof(item_set)
     # Add all items into a hashmap
     for i in range(len(items)):
         item_set[items[i]] = True
@@ -95,7 +100,10 @@ def greedy_tsp(worker, nodes, items):
         route.append(cur_item)
         dis += cur_dis
         del item_set[cur_item]
+    end_size = sys.getsizeof(item_set)
+    print(f"Memory usage of current run using Greedy Algorithm: {end_size - start_size}")
     return route, dis
+
 
 def reduce_matrix(matrix):
     # The value of this reduction
@@ -108,7 +116,7 @@ def reduce_matrix(matrix):
             reduced_matrix.append(reduced_row)
             continue
         for i in range(len(row)):
-            if row[i]==INF:
+            if row[i] == INF:
                 continue
             reduced_row[i] = row[i] - min_val
         reduced_matrix.append(reduced_row)
@@ -128,10 +136,14 @@ def reduce_matrix(matrix):
             reduced_matrix[j][i] -= col_mins[i]
     return res, reduced_matrix
 
+
 def tsp_branch_bound(dist_matrix):
     n = len(dist_matrix)
+    matrix = []
+    start_size_matrix = sys.getsizeof(matrix)
     bound, matrix = reduce_matrix(dist_matrix)
     pq = PriorityQueue()
+    start_size_queue = sys.getsizeof(pq)
     root = {
         'bound': bound,
         'matrix': matrix,
@@ -148,12 +160,16 @@ def tsp_branch_bound(dist_matrix):
             node = pq.get()
             # End condition
             if len(node['path']) == n:
+                end_size_matrix = sys.getsizeof(matrix)
+                end_size_queue = sys.getsizeof(pq)
+                print(
+                    f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
                 return node['path'], node['bound']
             for j in range(n):
                 if j != node['num'] and j not in node['path']:
                     newBound, newMatrix = move(node['matrix'], node['num'], j)
                     # Compute new bounds
-                    newVal = node['bound']+dist_matrix[node['num']][j]+newBound
+                    newVal = node['bound'] + dist_matrix[node['num']][j] + newBound
                     if newVal < curBound:
                         curBound = newVal
                         arr.clear()
@@ -172,8 +188,11 @@ def tsp_branch_bound(dist_matrix):
                 'path': arr[i][2],
                 'num': arr[i][0]
             })
-
+    end_size_matrix = sys.getsizeof(matrix)
+    end_size_queue = sys.getsizeof(pq)
+    print(f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
     return None, -1
+
 
 # This function is to move from one point to another and do some pre settings
 def move(matrix, x, y):
@@ -184,8 +203,3 @@ def move(matrix, x, y):
     moveMatrix[y][x] = INF
     # print(moveMatrix)
     return reduce_matrix(moveMatrix)
-
-
-
-
-
