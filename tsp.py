@@ -49,13 +49,12 @@ def distance(nodes, node1, node2):
 def branch_tsp(worker, nodes, items):
     n = len(items)
     dist_matrix = [[INF]*(n+1) for _ in range(n+1)]
-
+    # Construct the distance matrix
     for i in range(n):
         item = items[i]
         dist = distance(nodes, worker, item)
         dist_matrix[0][i+1] = dist
         dist_matrix[i+1][0] = dist
-
     for i in range(1, n+1):
         for j in range(i + 1, n+1):
             item1 = items[i-1]
@@ -64,8 +63,10 @@ def branch_tsp(worker, nodes, items):
             dist_matrix[i][j] = dist
             dist_matrix[j][i] = dist
     route, dis = tsp_branch_bound(dist_matrix)
+    # Remove worker location for the generality of the API
     route.remove(0)
     list = []
+    # Convert the id of items into specific locations
     for item in route:
         list.append(items[item-1])
     print(list, dis)
@@ -139,16 +140,19 @@ def tsp_branch_bound(dist_matrix):
     }
     pq.put(root)
     while not pq.empty():
+        # Do a BFS traverse, this is to get the size of a layer
         size = pq.qsize()
         curBound = INF
         arr = []
         for i in range(size):
             node = pq.get()
+            # End condition
             if len(node['path']) == n:
                 return node['path'], node['bound']
             for j in range(n):
                 if j != node['num'] and j not in node['path']:
                     newBound, newMatrix = move(node['matrix'], node['num'], j)
+                    # Compute new bounds
                     newVal = node['bound']+dist_matrix[node['num']][j]+newBound
                     if newVal < curBound:
                         curBound = newVal
@@ -160,6 +164,7 @@ def tsp_branch_bound(dist_matrix):
                         newPath = copy.deepcopy(node['path'])
                         newPath.add(j)
                         arr.append([j, newMatrix, newPath])
+        # Add potential nodes into the queue for future traverse
         for i in range(len(arr)):
             pq.put({
                 'bound': curBound,
@@ -170,7 +175,7 @@ def tsp_branch_bound(dist_matrix):
 
     return None, -1
 
-
+# This function is to move from one point to another and do some pre settings
 def move(matrix, x, y):
     moveMatrix = list(matrix)
     for i in range(len(matrix)):
