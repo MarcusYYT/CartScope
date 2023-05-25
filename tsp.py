@@ -86,9 +86,9 @@ def greedy_tsp(worker, nodes, items):
         # Go through items to find the nearest neighbor
         for j in range(len(items)):
             # Only traverse the items that has not been picked up
-            if(item_set[items[j]]):
+            if items[j] in item_set:
                 new_dis = distance(nodes, cur_node, items[j])
-                if(new_dis<cur_dis):
+                if new_dis < cur_dis:
                     cur_item = items[j]
                     cur_dis = new_dis
         route.append(cur_item)
