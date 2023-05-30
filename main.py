@@ -94,7 +94,7 @@ def inputItems():
                 break
             print(items[id])
             # Merge items at same shelves
-            pickupLoc = getMappedLoc(items[id])
+            pickupLoc = items[id]
             if pickupLoc not in item_ids:
                 item_ids[pickupLoc] = [id]
             else:
