@@ -159,7 +159,7 @@ def getItems():
             route_generator.print_path(path)
             addDirections(path)
             if i != len(route) - 2:
-                print('Please pick up the items of id', item_ids[route[i + 1]])
+                # print('Please pick up the items of id', item_ids[route[i + 1]])
                 printDirections()
                 input('Please press enter to go to next item')
                 print()
