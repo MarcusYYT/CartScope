@@ -5,6 +5,8 @@ import route_generator
 import tsp
 import running_time_history_logger
 import copy
+import traceback
+
 
 # Row and column of the map
 rows = 40
@@ -127,7 +129,7 @@ def getItems():
         print(pickuploc_list)
         if choice == 1:
             t = time.perf_counter()
-            shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list)
+            shortest_route, shortest_dis = tsp.multi_branch_tsp(worker, nodes, pickuploc_list)
             duration = time.perf_counter() - t
             route += shortest_route
             dis += shortest_dis
@@ -146,14 +148,15 @@ def getItems():
             route_generator.print_path(path)
             addDirections(path)
             if i != len(route) - 2:
-                print('Please pick up the items of id', item_ids[route[i + 1]])
+                # print('Please pick up the items of id', item_ids[route[i + 1]])
                 printDirections()
                 input('Please press enter to go to next item')
                 init_directions()
 
         print(f'Duration: {duration:.8f}s')
         running_time_history_logger.log(choice, len(pickuploc_list), duration)
-    except:
+    except Exception as ex:
+        traceback.print_exc()
         print("Invalid input! Please input again. ")
 
 

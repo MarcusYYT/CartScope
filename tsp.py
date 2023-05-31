@@ -236,7 +236,7 @@ def multi_branch_tsp(worker, nodes, items):
     for item in items:
         locs = getLoc(item, nodes)
         shelf_access[item] = locs
-        for loc in loc:
+        for loc in locs:
             access_shelf[loc] = {"shelf": item, "id": id}
             access_points.append(loc)
             id += 1
@@ -255,18 +255,13 @@ def multi_branch_tsp(worker, nodes, items):
             dist = distance(nodes, p1, p2)
             dist_matrix[i][j] = dist
             dist_matrix[j][i] = dist
-    route, dis = branch_and_bound_multi(dist_matrix)
+    route, dis = branch_and_bound_multi(dist_matrix, worker, len(items)+1)
     # Remove worker location for the generality of the API
-    route.remove(0)
-    list = []
-    # Convert the id of items into specific locations
-    for item in route:
-        list.append(access_points[item-1])
-    print(list, dis)
-    return list, dis
+    print(route, dis)
+    route.remove(worker)
+    return route, dis
 
-def branch_and_bound_multi(dist_matrix):
-    n = len(dist_matrix)
+def branch_and_bound_multi(dist_matrix, worker, n):
     matrix = []
     start_size_matrix = sys.getsizeof(matrix)
     bound, matrix = reduce_matrix(dist_matrix)
@@ -275,8 +270,9 @@ def branch_and_bound_multi(dist_matrix):
     root = {
         'bound': bound,
         'matrix': matrix,
-        'path': [0],
-        'num': 0
+        'path': [worker],
+        'num': 0,
+        'visited': {worker}
     }
     pq.put(root)
     while not pq.empty():
@@ -287,39 +283,54 @@ def branch_and_bound_multi(dist_matrix):
         for i in range(size):
             node = pq.get()
             # End condition
+            print(len(node['path']), n)
             if len(node['path']) == n:
-                end_size_matrix = sys.getsizeof(matrix)
-                end_size_queue = sys.getsizeof(pq)
-                print(
-                    f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
+                # end_size_matrix = sys.getsizeof(matrix)
+                # end_size_queue = sys.getsizeof(pq)
+                # print(
+                #     f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
                 return node['path'], node['bound']
             for j in range(n):
-                if j != node['num'] and j not in node['path']:
-                    newBound, newMatrix = move(node['matrix'], node['num'], j)
-                    # Compute new bounds
-                    newVal = node['bound'] + dist_matrix[node['num']][j] + newBound
-                    if newVal < curBound:
-                        curBound = newVal
-                        arr.clear()
-                        newPath = copy.deepcopy(node['path'])
-                        newPath.append(j)
-                        arr.append([j, newMatrix, newPath])
-                    elif newBound == curBound:
-                        newPath = copy.deepcopy(node['path'])
-                        newPath.append(j)
-                        arr.append([j, newMatrix, newPath])
+                if j == node['num']:
+                    continue
+                shelf = get_shelf(j)
+                # print(shelf)
+                if shelf in node['visited']:
+                    continue
+                newBound, newMatrix = move(node['matrix'], node['num'], j)
+                # Compute new bounds
+                newVal = node['bound'] + dist_matrix[node['num']][j] + newBound
+                if newVal < curBound:
+                    curBound = newVal
+                    arr.clear()
+                    newPath = copy.deepcopy(node['path'])
+                    newPath.append(access_points[j])
+                    newVisit = copy.deepcopy(node['visited'])
+                    newVisit.add(shelf)
+                    arr.append([j, newMatrix, newPath, newVisit])
+                elif newBound == curBound:
+                    newPath = copy.deepcopy(node['path'])
+                    newPath.append(access_points[j])
+                    newVisit = copy.deepcopy(node['visited'])
+                    newVisit.add(shelf)
+                    arr.append([j, newMatrix, newPath, newVisit])
         # Add potential nodes into the queue for future traverse
         for i in range(len(arr)):
             pq.put({
                 'bound': curBound,
                 'matrix': arr[i][1],
                 'path': arr[i][2],
-                'num': arr[i][0]
+                'num': arr[i][0],
+                'visited': arr[i][3]
             })
     end_size_matrix = sys.getsizeof(matrix)
     end_size_queue = sys.getsizeof(pq)
     print(f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
     return None, -1
+
+def get_shelf(num):
+    access_point = access_points[num-1]
+    return access_shelf[access_point]['shelf']
 
 def move_multi(matrix, x, y):
     moveMatrix = list(matrix)
@@ -338,7 +349,7 @@ def getLoc(location, nodes):
         new_x = x + dir_matrix[i]
         new_y = y + dir_matrix[i + 1]
         if isValid([new_x, new_y], nodes) and nodes[new_x][new_y] != 2:
-            locs.append([new_x, new_y])
+            locs.append((new_x, new_y))
     return locs
 
 def isValid(point, nodes):
