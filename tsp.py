@@ -3,7 +3,6 @@ import sys
 import copy
 from queue import PriorityQueue
 import route_generator
-
 INF = sys.maxsize
 rows = 40
 columns = 21
@@ -15,31 +14,6 @@ def distance(nodes, node1, node2):
     return dis[0]
 
 
-# # Brute force implementation of tsp
-# def tsp_permutation(worker, nodes, items):
-#     # Generate all possible permutations of the nodes
-#     permutations = itertools.permutations(items)
-#
-#     # Initialize variables for the shortest distance and route
-#     shortest_distance = float('inf')
-#     shortest_route = None
-#
-#     # Iterate over each permutation and calculate its distance
-#     for route in permutations:
-#         route_distance = 0
-#         for i in range(len(route) - 1):
-#             route_distance += distance(nodes, route[i], route[i + 1])
-#         # Add the distance from the last node back to the first node
-#         route_distance += distance(nodes, worker, route[0])
-#         route_distance += distance(nodes, worker, route[len(route)-1])
-#
-#         # Update the shortest distance and route if necessary
-#         if route_distance < shortest_distance:
-#             shortest_distance = route_distance
-#             shortest_route = route
-#
-#     return shortest_route, shortest_distance
-#
 # # Simple implementation which only follows the initial order to pick up items
 # def tsp_order(worker, nodes, items):
 #     route = []
@@ -91,7 +65,6 @@ def branch_tsp(worker, nodes, items):
     # Convert the id of items into specific locations
     for item in route:
         list.append(items[item - 1])
-    print(list, dis)
     return list, dis
 
 # Single access point of greedy
@@ -102,7 +75,6 @@ def greedy_tsp(worker, nodes, items):
     dis = 0
     cur_node = worker
     item_set = {}
-    start_size = sys.getsizeof(item_set)
     # Add all items into a hashmap
     for i in range(len(items)):
         item_set[items[i]] = True
@@ -121,8 +93,6 @@ def greedy_tsp(worker, nodes, items):
         route.append(cur_item)
         dis += cur_dis
         del item_set[cur_item]
-    end_size = sys.getsizeof(item_set)
-    print(f"Memory usage of current run using Greedy Algorithm: {end_size - start_size}")
     return route, dis
 
 
@@ -161,10 +131,8 @@ def reduce_matrix(matrix):
 def tsp_branch_bound(dist_matrix):
     n = len(dist_matrix)
     matrix = []
-    start_size_matrix = sys.getsizeof(matrix)
     bound, matrix = reduce_matrix(dist_matrix)
     pq = PriorityQueue()
-    start_size_queue = sys.getsizeof(pq)
     root = {
         'bound': bound,
         'matrix': matrix,
@@ -181,10 +149,7 @@ def tsp_branch_bound(dist_matrix):
             node = pq.get()
             # End condition
             if len(node['path']) == n:
-                end_size_matrix = sys.getsizeof(matrix)
-                end_size_queue = sys.getsizeof(pq)
-                print(
-                    f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
+
                 return node['path'], node['bound']
             for j in range(n):
                 if j != node['num'] and j not in node['path']:
@@ -209,9 +174,6 @@ def tsp_branch_bound(dist_matrix):
                 'path': arr[i][2],
                 'num': arr[i][0]
             })
-    end_size_matrix = sys.getsizeof(matrix)
-    end_size_queue = sys.getsizeof(pq)
-    print(f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
     return None, -1
 
 
@@ -222,7 +184,6 @@ def move(matrix, x, y):
         moveMatrix[x][i] = INF
         moveMatrix[i][y] = INF
     moveMatrix[y][x] = INF
-    # print(moveMatrix)
     return reduce_matrix(moveMatrix)
 
 # shelf -> access points
