@@ -231,13 +231,26 @@ shelf_access = {}
 access_shelf = {}
 # list of access points
 access_points = []
+
+
+def get_shelves(items, nodes, shelves):
+    for item in items:
+        x = math.floor(item[0])
+        y = math.floor(item[1])
+        shelf = (x, y)
+        if shelf not in shelves:
+            shelves.append(shelf)
+
+
 def multi_branch_tsp(worker, nodes, items):
     id = 1
-    for item in items:
-        locs = getLoc(item, nodes)
-        shelf_access[item] = locs
+    shelves = []
+    get_shelves(items, nodes, shelves)
+    for shelf in shelves:
+        locs = getLoc(shelf, nodes)
+        shelf_access[shelf] = locs
         for loc in locs:
-            access_shelf[loc] = {"shelf": item, "id": id}
+            access_shelf[loc] = {"shelf": shelf, "id": id}
             access_points.append(loc)
             id += 1
     n = len(access_points)
@@ -255,7 +268,7 @@ def multi_branch_tsp(worker, nodes, items):
             dist = distance(nodes, p1, p2)
             dist_matrix[i][j] = dist
             dist_matrix[j][i] = dist
-    route, dis = branch_and_bound_multi(dist_matrix, worker, len(items)+1)
+    route, dis = branch_and_bound_multi(dist_matrix, worker, len(shelf)+1)
     # Remove worker location for the generality of the API
     print(route, dis)
     route.remove(worker)
@@ -283,14 +296,14 @@ def branch_and_bound_multi(dist_matrix, worker, n):
         for i in range(size):
             node = pq.get()
             # End condition
-            print(len(node['path']), n)
+            print(len(node['path']))
             if len(node['path']) == n:
                 # end_size_matrix = sys.getsizeof(matrix)
                 # end_size_queue = sys.getsizeof(pq)
                 # print(
                 #     f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
                 return node['path'], node['bound']
-            for j in range(n):
+            for j in range(1, len(dist_matrix)):
                 if j == node['num']:
                     continue
                 shelf = get_shelf(j)
@@ -300,11 +313,12 @@ def branch_and_bound_multi(dist_matrix, worker, n):
                 newBound, newMatrix = move(node['matrix'], node['num'], j)
                 # Compute new bounds
                 newVal = node['bound'] + dist_matrix[node['num']][j] + newBound
+                # print(newVal, access_points[j-1])
                 if newVal < curBound:
                     curBound = newVal
                     arr.clear()
                     newPath = copy.deepcopy(node['path'])
-                    newPath.append(access_points[j])
+                    newPath.append(access_points[j-1])
                     newVisit = copy.deepcopy(node['visited'])
                     newVisit.add(shelf)
                     arr.append([j, newMatrix, newPath, newVisit])
@@ -355,6 +369,8 @@ dir_matrix = [1, 0, -1, 0, 1]
 def getLoc(location, nodes):
     locs = []
     x, y = location
+    x = math.floor(x)
+    y = math.floor(y)
     for i in range(4):
         new_x = x + dir_matrix[i]
         new_y = y + dir_matrix[i + 1]
