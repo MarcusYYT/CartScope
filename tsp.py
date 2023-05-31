@@ -332,12 +332,22 @@ def get_shelf(num):
     access_point = access_points[num-1]
     return access_shelf[access_point]['shelf']
 
+# TODO: Set all access points for one item
 def move_multi(matrix, x, y):
+    shelf_x = get_shelf(x)
+    shelf_y = get_shelf(y)
+    points_x = shelf_access[shelf_x]
+    points_y = shelf_access[shelf_y]
     moveMatrix = list(matrix)
     for i in range(len(matrix)):
-        moveMatrix[x][i] = INF
-        moveMatrix[i][y] = INF
-    moveMatrix[y][x] = INF
+        for j in range(len(points_x)):
+            point = points_x[j]
+            x_id = access_shelf[point]['id']
+            moveMatrix[x_id][i] = INF
+        for j in range(len(points_y)):
+            point = points_y[j]
+            y_id = access_shelf[point]['id']
+            moveMatrix[i][y_id] = INF
     # print(moveMatrix)
     return reduce_matrix(moveMatrix)
 
