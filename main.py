@@ -13,6 +13,8 @@ import tracemalloc
 rows = 40
 columns = 21
 
+# List of items loaded from file
+itemlists = []
 # Dictionary to lookup all the item locations on shelves by id, in format { id, (x, y) }. x, y are integers
 items = {}
 # Dictionary to lookup ids by item pickup locations, in format { (x, y), id }
@@ -86,7 +88,7 @@ def init_directions():
     directed_map = copy.deepcopy(nodes)
 
 # Get Items from user input
-def inputItems():
+def mamuallyInputItems():
     print('Please input the item ids you are purchasing: ')
     print('input -1 to stop: ')
     global pickuploc_list
@@ -111,6 +113,36 @@ def inputItems():
     new_list = list(set(pickuploc_list))
     pickuploc_list = []
     pickuploc_list += new_list
+
+
+def loadListFromFile():
+    global itemlists
+
+    f = open('qvBox-warehouse-orders-list-part01.txt', 'r')
+    lines = f.readlines()
+    for line in lines:
+        itemids = line.strip().split(", ")
+        itemlists.append(list(map(int, itemids)))
+    # print(itemlist)
+
+def selectOneListFromLoadedData():
+    global pickuploc_list
+    print("Now please select one list from the item lists we loaded from file.")
+    print("Here are the lists:")
+    for i in range(len(itemlists)):
+        print(f"{i}. {itemlists[i]}")
+    try:
+        choice = eval(input("Please select by input the index:"))
+        itemids = itemlists[choice]
+        for j in range(len(itemids)):
+            pickupLoc = items[itemids[j]]
+            if pickupLoc not in item_ids:
+                item_ids[pickupLoc] = [id]
+            else:
+                item_ids[pickupLoc].append(id)
+            pickuploc_list.append(pickupLoc)
+    except SyntaxError:
+        print("Invalid input! Please input again. ")
 
 # Function 1. Get Items
 def getItems():
@@ -221,7 +253,7 @@ def open_settings():
             print("Worker location changed.")
         elif num == 2:
             pickuploc_list = []
-            inputItems()
+            mamuallyInputItems()
         else:
             print("Invalid input! ")
     except SyntaxError:
@@ -230,7 +262,7 @@ def open_settings():
 
 
 # Load data file into list
-def loadFromFile():
+def loadDataFromFile():
     global worker
     global nodes
 
@@ -278,9 +310,9 @@ def getMappedLoc(location):
 def main():
     # Generate random data before running
     # generateRandomData()
-    loadFromFile()
-    inputItems()
-
+    loadDataFromFile()
+    loadListFromFile()
+    selectOneListFromLoadedData()
 
     print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
     print("1 - Get Items")
