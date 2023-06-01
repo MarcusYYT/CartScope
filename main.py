@@ -5,7 +5,6 @@ import route_generator
 import tsp
 import running_time_history_logger
 import copy
-from memory_profiler import memory_usage
 import tracemalloc
 
 
@@ -141,6 +140,7 @@ def selectOneListFromLoadedData():
             else:
                 item_ids[pickupLoc].append(id)
             pickuploc_list.append(pickupLoc)
+        print(pickuploc_list)
     except SyntaxError:
         print("Invalid input! Please input again. ")
 
