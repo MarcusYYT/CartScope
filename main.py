@@ -126,12 +126,14 @@ def loadListFromFile():
 
 def selectOneListFromLoadedData():
     global pickuploc_list
-    print("Now please select one list from the item lists we loaded from file.")
+    print("Now the item lists are loaded successfully.")
+    print("Press Enter to display the lists.")
+    input()
     print("Here are the lists:")
     for i in range(len(itemlists)):
         print(f"{i}. {itemlists[i]}")
     try:
-        choice = eval(input("Please select by input the index:"))
+        choice = eval(input("Please select one list from the item lists we loaded from file by input the index:"))
         itemids = itemlists[choice]
         for j in range(len(itemids)):
             pickupLoc = items[itemids[j]]
@@ -140,7 +142,7 @@ def selectOneListFromLoadedData():
             else:
                 item_ids[pickupLoc].append(id)
             pickuploc_list.append(pickupLoc)
-        print(pickuploc_list)
+        print(f"Item locations to be picked up: {pickuploc_list}")
     except SyntaxError:
         print("Invalid input! Please input again. ")
 
@@ -230,6 +232,7 @@ def open_settings():
     print("Please input the corresponding number to choose the next step.")
     print("1 - Input worker location manually")
     print("2 - Re-input items")
+    print("3 - Reload item lists from file")
     try:
         num = eval(input())
         global worker
@@ -254,6 +257,9 @@ def open_settings():
         elif num == 2:
             pickuploc_list = []
             mamuallyInputItems()
+        elif num == 3:
+            loadListFromFile()
+            selectOneListFromLoadedData()
         else:
             print("Invalid input! ")
     except SyntaxError:
@@ -311,8 +317,26 @@ def main():
     # Generate random data before running
     # generateRandomData()
     loadDataFromFile()
-    loadListFromFile()
-    selectOneListFromLoadedData()
+    print("Welcome to Ants Carts Moving.")
+    print("Which method do you prefer for getting your items?")
+    print("1 - Load item lists from file")
+    print("2 - Manually input item ids")
+    while True:
+        try:
+            num = eval(input())
+            if num == 1:
+                loadListFromFile()
+                selectOneListFromLoadedData()
+                break
+            elif num == 2:
+                mamuallyInputItems()
+                break
+            else:
+                print("Invalid input! Please input again. ")
+                continue
+        except SyntaxError:
+            print("Invalid input! Please input again. ")
+            continue
 
     print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
     print("1 - Get Items")
@@ -337,7 +361,7 @@ def main():
         except SyntaxError:
             print("Invalid input! Please input again. ")
             continue
-        print("Welcome to Ants Carts Moving, please input the corresponding number to choose the next step.")
+        print("Please input the corresponding number to choose the next step.")
         print("1 - Get Items")
         print("2 - Settings")
         print("3 - Print Map")

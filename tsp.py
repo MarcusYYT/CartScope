@@ -201,7 +201,7 @@ def get_shelves(items, nodes, shelves):
             shelves.append(shelf)
 
 
-def multi_branch_tsp(worker, nodes, items, end):
+def multi_branch_tsp(worker, nodes, items):
     id = 1
     shelves = []
     get_shelves(items, nodes, shelves)
