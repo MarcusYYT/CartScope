@@ -25,6 +25,7 @@ def distance(nodes, node1, node2):
 #     dis += distance(nodes, worker, items[len(items) - 1])
 #     return route, dis
 
+
 # Map the item location to a accessible lane position
 def getMappedLoc(location):
     x = math.floor(location[0])
@@ -67,7 +68,7 @@ def branch_tsp(worker, nodes, items):
         list.append(items[item - 1])
     return list, dis
 
-# Single access point of greedy
+# Multiple access points of greedy
 def greedy_tsp(worker, nodes, items):
     for i in range(len(items)):
         items[i] = getMappedLoc(items[i])
@@ -260,7 +261,7 @@ def branch_and_bound_multi(dist_matrix, worker, n):
     matrix = []
     start_size_matrix = sys.getsizeof(matrix)
     bound, matrix = reduce_matrix(dist_matrix)
-    # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix]))
+    print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix]))
     pq = Queue()
     start_size_queue = sys.getsizeof(pq)
     root = {
@@ -333,7 +334,7 @@ def branch_and_bound_multi(dist_matrix, worker, n):
                     pre_shelf = shelf
                     pre_base = calculate_dis(dist_matrix, j, node['visited'])
                     if tmp_bound != INF:
-                        pre_bound = tmp_bound-tmp_offset
+                        pre_bound = tmp_bound
                         if pre_bound < curBound:
                             curBound = pre_bound
                             arr.clear()
@@ -346,7 +347,7 @@ def branch_and_bound_multi(dist_matrix, worker, n):
                     tmp_offset = 0
                     tmp_list.clear()
                     tmp_list.append([j, newMatrix, newPath, newVisit])
-            pre_bound = tmp_bound - tmp_offset
+            pre_bound = tmp_bound
             if pre_bound < curBound:
                 curBound = pre_bound
                 arr.clear()
@@ -395,11 +396,11 @@ def move_multi(matrix, x, y):
         for j in range(len(matrix)):
             moveMatrix[j][y_id] = INF
     # print(moveMatrix)
-    if shelf_y == (20, 10):
-        print(x, y)
-        print(points_x)
-        print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix]))
-        print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in moveMatrix]))
+    # if shelf_y == (12, 6):
+    #     print(x, y)
+    #     print(points_x)
+    #     print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix]))
+    #     print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in moveMatrix]))
     return reduce_matrix(moveMatrix)
 
 dir_matrix = [1, 0, -1, 0, 1]
