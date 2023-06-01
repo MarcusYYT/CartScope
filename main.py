@@ -93,6 +93,8 @@ def manuallyInputItems():
     print('Please input the item ids you are purchasing: ')
     print('input -1 to stop: ')
     global pickuploc_list
+    pickuploc_list = []
+    global order_index
     while True:
         try:
             id = eval(input())
@@ -143,19 +145,29 @@ def selectOneListFromLoadedData():
         print(f"{i+1}. {itemlists[i]}")
     try:
         order_index = eval(input("Please select one list from the item lists we loaded from file by input the index:"))-1
-        itemids = itemlists[order_index]
-        for j in range(len(itemids)):
-            pickupLoc = items[itemids[j]]
-            if pickupLoc not in item_ids:
-                item_ids[pickupLoc] = [id]
-            else:
-                item_ids[pickupLoc].append(id)
-            pickuploc_list.append(pickupLoc)
-        print(f"Items chosen: {order_index + 1}.{itemlists[order_index]}")
-        print(f"Item locations to be picked up: {pickuploc_list}")
+        loadListFromLoadedData()
     except SyntaxError:
         print("Invalid input! Please input again. ")
 
+
+def loadListFromLoadedData():
+    global pickuploc_list
+    global item_ids
+    global order_index
+    itemids = itemlists[order_index]
+    pickuploc_list = []
+    for j in range(len(itemids)):
+        pickupLoc = items[itemids[j]]
+        if pickupLoc not in item_ids:
+            item_ids[pickupLoc] = [id]
+        else:
+            item_ids[pickupLoc].append(id)
+        pickuploc_list.append(pickupLoc)
+    new_list = list(set(pickuploc_list))
+    pickuploc_list = []
+    pickuploc_list += new_list
+    print(f"Items chosen: {order_index + 1}.{itemlists[order_index]}")
+    print(f"Item locations to be picked up: {pickuploc_list}")
 
 def loadNextUnfulfilledOrder():
     global order_index
@@ -173,17 +185,8 @@ def loadNextUnfulfilledOrder():
         try:
             choice = eval(input())
             if choice == 1:
-                itemids = itemlists[order_index]
-                for j in range(len(itemids)):
-                    pickupLoc = items[itemids[j]]
-                    if pickupLoc not in item_ids:
-                        item_ids[pickupLoc] = [id]
-                    else:
-                        item_ids[pickupLoc].append(id)
-                    pickuploc_list.append(pickupLoc)
-                print(f"Items chosen: {order_index + 1}.{itemlists[order_index]}")
-                print(f"Item locations to be picked up: {pickuploc_list}")
                 order_index += 1
+                loadListFromLoadedData()
                 break
             elif choice == 2:
                 break

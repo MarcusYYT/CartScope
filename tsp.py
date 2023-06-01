@@ -270,19 +270,13 @@ def branch_and_bound_multi(dist_matrix, worker, n):
             node = pq.get()
             # End condition
             if len(node['path']) == n:
-                # end_size_matrix = sys.getsizeof(matrix)
-                # end_size_queue = sys.getsizeof(pq)
-                # print(
-                #     f"Memory usage of current run using Batch&Bound Algorithm: {end_size_queue + end_size_matrix - start_size_matrix - start_size_queue}")
                 final_distance = get_dis(dist_matrix, node['path'])
                 while not pq.empty():
                     tmp_node = pq.get()
-                    # print(tmp_node['path'])
                     tmp_dis = get_dis(dist_matrix, tmp_node['path'])
                     if tmp_dis < final_distance:
                         node = tmp_node
                         final_distance = tmp_dis
-                # print(size)
                 return node['path'], final_distance
             tmp_bound = INF
             tmp_offset = 0
