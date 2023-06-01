@@ -3,6 +3,7 @@ import sys
 import copy
 from queue import PriorityQueue, Queue
 import route_generator
+
 INF = sys.maxsize
 rows = 40
 columns = 21
@@ -13,17 +14,6 @@ def distance(nodes, node1, node2):
     dis = route_generator.dijkstra(nodes, node1, node2)
     return dis[0]
 
-
-# # Simple implementation which only follows the initial order to pick up items
-# def tsp_order(worker, nodes, items):
-#     route = []
-#     dis = 0
-#     route += items
-#     dis += distance(nodes, worker, items[0])
-#     for i in range(len(items) - 1):
-#         dis += distance(nodes, items[i], items[i + 1])
-#     dis += distance(nodes, worker, items[len(items) - 1])
-#     return route, dis
 
 # Map the item location to a accessible lane position
 def getMappedLoc(location):
@@ -40,32 +30,32 @@ def getMappedLoc(location):
     return (x, y - 1)
 
 # Single access point of branch and bound
-def branch_tsp(worker, nodes, items):
-    for i in range(len(items)):
-        items[i] = getMappedLoc(items[i])
-    n = len(items)
-    dist_matrix = [[INF] * (n + 1) for _ in range(n + 1)]
-    # Construct the distance matrix
-    for i in range(n):
-        item = items[i]
-        dist = distance(nodes, worker, item)
-        dist_matrix[0][i + 1] = dist
-        dist_matrix[i + 1][0] = dist
-    for i in range(1, n + 1):
-        for j in range(i + 1, n + 1):
-            item1 = items[i - 1]
-            item2 = items[j - 1]
-            dist = distance(nodes, item1, item2)
-            dist_matrix[i][j] = dist
-            dist_matrix[j][i] = dist
-    route, dis = tsp_branch_bound(dist_matrix)
-    # Remove worker location for the generality of the API
-    route.remove(0)
-    list = []
-    # Convert the id of items into specific locations
-    for item in route:
-        list.append(items[item - 1])
-    return list, dis
+# def branch_tsp(worker, nodes, items):
+#     for i in range(len(items)):
+#         items[i] = getMappedLoc(items[i])
+#     n = len(items)
+#     dist_matrix = [[INF] * (n + 1) for _ in range(n + 1)]
+#     # Construct the distance matrix
+#     for i in range(n):
+#         item = items[i]
+#         dist = distance(nodes, worker, item)
+#         dist_matrix[0][i + 1] = dist
+#         dist_matrix[i + 1][0] = dist
+#     for i in range(1, n + 1):
+#         for j in range(i + 1, n + 1):
+#             item1 = items[i - 1]
+#             item2 = items[j - 1]
+#             dist = distance(nodes, item1, item2)
+#             dist_matrix[i][j] = dist
+#             dist_matrix[j][i] = dist
+#     route, dis = tsp_branch_bound(dist_matrix)
+#     # Remove worker location for the generality of the API
+#     route.remove(0)
+#     list = []
+#     # Convert the id of items into specific locations
+#     for item in route:
+#         list.append(items[item - 1])
+#     return list, dis
 
 # Single access point of greedy
 def greedy_tsp(worker, nodes, items):
@@ -202,6 +192,9 @@ def get_shelves(items, nodes, shelves):
 
 # branch and bound for multiple access points
 def multi_branch_tsp(worker, nodes, items):
+    shelf_access = {}
+    access_shelf = {}
+    access_points = []
     id = 1
     shelves = []
     get_shelves(items, nodes, shelves)
