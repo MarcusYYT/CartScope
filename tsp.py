@@ -200,7 +200,7 @@ def get_shelves(items, nodes, shelves):
         if shelf not in shelves:
             shelves.append(shelf)
 
-
+# branch and bound for multiple access points
 def multi_branch_tsp(worker, nodes, items):
     id = 1
     shelves = []
