@@ -70,31 +70,28 @@ def branch_tsp(worker, nodes, items):
 
 # Multiple access points of greedy
 def greedy_tsp(worker, nodes, items):
-    for i in range(len(items)):
-        items[i] = getMappedLoc(items[i])
+    shelves = []
+    get_shelves(items, nodes, shelves)
+    pre = worker
     route = []
-    dis = 0
-    cur_node = worker
-    item_set = {}
-    # Add all items into a hashmap
-    for i in range(len(items)):
-        item_set[items[i]] = True
-    # Traverse all items
-    for i in range(len(items)):
-        cur_dis = sys.maxsize
-        cur_item = -1
-        # Go through items to find the nearest neighbor
-        for j in range(len(items)):
-            # Only traverse the items that has not been picked up
-            if items[j] in item_set:
-                new_dis = distance(nodes, cur_node, items[j])
-                if new_dis < cur_dis:
-                    cur_item = items[j]
-                    cur_dis = new_dis
-        route.append(cur_item)
-        dis += cur_dis
-        del item_set[cur_item]
-    return route, dis
+    length = 0
+    cur_shelf = None
+    while len(shelves) != 0:
+        min_dis = INF
+        access_point = None
+        for shelf in shelves:
+            locs = getLoc(shelf, nodes)
+            for loc in locs:
+                tmp_dis = distance(nodes, loc, pre)
+                if tmp_dis < min_dis:
+                    min_dis = tmp_dis
+                    access_point = loc
+                    cur_shelf = shelf
+        length += min_dis
+        route.append(access_point)
+        shelves.remove(cur_shelf)
+    length += distance(nodes, route[len(route)-1], worker)
+    return route, length
 
 
 def reduce_matrix(matrix):
