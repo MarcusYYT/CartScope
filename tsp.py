@@ -309,7 +309,7 @@ def branch_and_bound_multi(dist_matrix, worker, n):
                 newBound, newMatrix = move_multi(node['matrix'], node['num'], j)
                 # Compute new bounds
                 newVal = node['bound'] + dist_matrix[node['num']][j] + newBound
-                print(newBound, access_points[j-1], dist_matrix[node['num']][j])
+                # print(newBound, access_points[j-1], dist_matrix[node['num']][j])
                 newPath = copy.deepcopy(node['path'])
                 newPath.append(access_points[j - 1])
                 newVisit = copy.deepcopy(node['visited'])
@@ -334,7 +334,7 @@ def branch_and_bound_multi(dist_matrix, worker, n):
                     pre_shelf = shelf
                     pre_base = calculate_dis(dist_matrix, j, node['visited'])
                     if tmp_bound != INF:
-                        pre_bound = tmp_bound
+                        pre_bound = tmp_bound - tmp_offset
                         if pre_bound < curBound:
                             curBound = pre_bound
                             arr.clear()
@@ -347,7 +347,7 @@ def branch_and_bound_multi(dist_matrix, worker, n):
                     tmp_offset = 0
                     tmp_list.clear()
                     tmp_list.append([j, newMatrix, newPath, newVisit])
-            pre_bound = tmp_bound
+            pre_bound = tmp_bound - tmp_offset
             if pre_bound < curBound:
                 curBound = pre_bound
                 arr.clear()
