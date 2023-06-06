@@ -1,6 +1,7 @@
 import math
 import sys
 import copy
+from queue import PriorityQueue
 import route_generator
 INF = sys.maxsize
 rows = 40
@@ -40,7 +41,7 @@ def getMappedLoc(location):
 # Multiple access points of greedy
 def greedy_tsp(worker, nodes, items):
     shelves = []
-    get_shelves(items, nodes, shelves)
+    # get_shelves(items, nodes, shelves)
     pre = worker
     route = []
     length = 0
@@ -63,23 +64,30 @@ def greedy_tsp(worker, nodes, items):
     return route, length
 
 def move_multi(matrix, x, y):
-    shelf_x = get_shelf(x)
-    shelf_y = get_shelf(y)
+    points_x = []
+    points_y = []
+    if x>1:
+        id = (x-2)/4
+        for i in range(2+id*4, 6+id*4):
+            points_x.append(i)
+    else:
+        points_x.append(x)
+    if y>1:
+        id = (x - 2) / 4
+        for i in range(2 + id * 4, 6 + id * 4):
+            points_y.append(i)
+    else:
+        points_y.append(y)
 
-    points_x = shelf_access[shelf_x]
-    points_y = shelf_access[shelf_y]
     moveMatrix = copy.deepcopy(matrix)
     for i in range(len(points_x)):
         point = points_x[i]
-        x_id = access_shelf[point]['id']
-        # print(x_id)
         for j in range(len(matrix)):
-            moveMatrix[x_id][j] = INF
+            moveMatrix[point][j] = INF
     for i in range(len(points_y)):
         point = points_y[i]
-        y_id = access_shelf[point]['id']
         for j in range(len(matrix)):
-            moveMatrix[j][y_id] = INF
+            moveMatrix[j][point] = INF
     return reduce_matrix(moveMatrix)
 
 
@@ -135,17 +143,81 @@ def reduce_matrix(matrix):
         res += min_val
     return res
 
-matrix = [
-    [INF, 0, 2, 3, 4, 5],
-    [0, INF, 2, 3, 4, 5],
-    [2, 2, INF, 3, 4, 5],
-    [3, 3, 3, INF, 4, 5],
-    [4, 4, 4, 4, INF, 5],
-    [5, 5, 5, 5, 5, INF],
-]
 
-print(reduce_matrix(matrix))
-print_matrix(matrix)
+def getAdjacency(start, end, items, nodes):
+    n = len(items)
+    dist_matrix = [[INF] * (n + 2) for _ in range(n + 2)]
+    dist_matrix[0][1] = 0
+    dist_matrix[1][0] = 0
+    for i in range(n):
+        item = items[i]
+        dist_start = distance(nodes, start, item)
+        dist_end = distance(nodes, end, item)
+        dist_matrix[0][i+2] = dist_start
+        dist_matrix[i+2][0] = dist_start
+        dist_matrix[1][i + 2] = dist_end
+        dist_matrix[i + 2][1] = dist_end
+    for i in range(2, n + 2):
+        for j in range(i + 1, n + 2):
+            item1 = items[i - 2]
+            item2 = items[j - 2]
+            dist = distance(nodes, item1, item2)
+            dist_matrix[i][j] = dist
+            dist_matrix[j][i] = dist
+    return dist_matrix
+
+
+def branch_tsp(start, nodes, items, end):
+    dist_matrix = getAdjacency(start, end, items, nodes)
+    pq = PriorityQueue()
+    matrix = copy.deepcopy(dist_matrix)
+    val = reduce_matrix(matrix)
+    root = Node(val, {
+        'matrix': matrix,
+        'path': [0],
+        'num': 0
+    })
+    pq.put(root)
+
+    curBound = INF
+    curNode = None
+    n = len(dist_matrix)
+    while not pq.empty():
+        size = pq.qsize()
+        for i in range(size):
+            node = pq.get()
+            # End condition
+            if node.bound>=curBound:
+                return curNode['path'], curBound
+            if len(node['path']) == n:
+                if node.bound < curBound:
+                    curBound = node.bound
+                    curNode = node
+                    continue
+            for j in range(n):
+                if j != node['num'] and j not in node['path']:
+                    newBound, newMatrix = move_multi(node['matrix'], node['num'], j)
+                    # Compute new bounds
+                    newVal = node['bound'] + node['matrix'][node['num']][j] + newBound
+                    newPath = copy.deepcopy(node['path'])
+                    newPath.append(j)
+                    pq.put(Node(newVal, {
+                        'matrix': newMatrix,
+                        'path': newPath,
+                        'num': j
+                    }))
+    return None, -1
+# matrix = [
+#     [INF, 0, 2, 3, 4, 5],
+#     [0, INF, 2, 3, 4, 5],
+#     [2, 2, INF, 3, 4, 5],
+#     [3, 3, 3, INF, 4, 5],
+#     [4, 4, 4, 4, INF, 5],
+#     [5, 5, 5, 5, 5, INF],
+# ]
+#
+# print(reduce_matrix(matrix))
+# print_matrix(matrix)
 
 dir_matrix = [1, 0, -1, 0, 1]
 def getLoc(location, nodes):
@@ -163,3 +235,12 @@ def getLoc(location, nodes):
 def isValid(point, nodes):
     x, y = point
     return 0 <= x < len(nodes)  and 0 <= y < len(nodes[0])
+
+class Node(object):
+    def __init__(self, bound, data):
+        self.bound = bound
+        self.data = data
+
+    def __lt__(self, other):
+        if self.bound == other.bound:
+            return len(self.data['path']) > len(other.data['path'])
