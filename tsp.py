@@ -168,6 +168,7 @@ def getAdjacency(start, end, items, nodes):
 
 
 def branch_tsp(start, nodes, items, end):
+    print(items)
     dist_matrix = getAdjacency(start, end, items, nodes)
     pq = PriorityQueue()
     matrix = copy.deepcopy(dist_matrix)
@@ -188,6 +189,7 @@ def branch_tsp(start, nodes, items, end):
             node = pq.get()
             # End condition
             if node.bound>=curBound:
+                print(curNode['path'])
                 return curNode['path'], curBound
             if len(node['path']) == n:
                 if node.bound < curBound:
