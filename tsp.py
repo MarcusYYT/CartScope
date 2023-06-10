@@ -3,6 +3,7 @@ import sys
 import copy
 from queue import PriorityQueue
 import route_generator
+
 INF = sys.maxsize
 rows = 40
 columns = 21
@@ -38,6 +39,7 @@ def getMappedLoc(location):
         return (x, y - 1)
     return (x, y - 1)
 
+
 # Multiple access points of greedy
 def greedy_tsp(worker, nodes, items):
     shelves = []
@@ -60,25 +62,25 @@ def greedy_tsp(worker, nodes, items):
         length += min_dis
         route.append(access_point)
         shelves.remove(cur_shelf)
-    length += distance(nodes, route[len(route)-1], worker)
+    length += distance(nodes, route[len(route) - 1], worker)
     return route, length
+
 
 def move_multi(matrix, x, y):
     points_x = []
     points_y = []
-    if x>1:
-        id = (x-2)/4
-        for i in range(2+id*4, 6+id*4):
+    if x > 1:
+        id = math.floor((x - 1) / 4)
+        for i in range(1 + id * 4, 5 + id * 4):
             points_x.append(i)
     else:
         points_x.append(x)
-    if y>1:
-        id = (x - 2) / 4
-        for i in range(2 + id * 4, 6 + id * 4):
+    if y > 1:
+        id = math.floor((x - 1) / 4)
+        for i in range(1 + id * 4, 5 + id * 4):
             points_y.append(i)
     else:
         points_y.append(y)
-
     moveMatrix = copy.deepcopy(matrix)
     for i in range(len(points_x)):
         point = points_x[i]
@@ -88,20 +90,21 @@ def move_multi(matrix, x, y):
         point = points_y[i]
         for j in range(len(matrix)):
             moveMatrix[j][point] = INF
-    return reduce_matrix(moveMatrix)
+    res = reduce_matrix(moveMatrix)
+    return res, moveMatrix
 
 
 def get_block_min(x, y, matrix):
     res = INF
-    for i in range(x, x+4):
-        tmp_min = min(matrix[i][y:y+4])
+    for i in range(x, x + 4):
+        tmp_min = min(matrix[i][y:y + 4])
         res = min(res, tmp_min)
     return res
 
 
 def reduce_matrix(matrix):
     res = 0
-    n = int((len(matrix) - 2)/4)
+    n = math.floor((len(matrix) - 2) / 4)
     # Row reduction
     for i in range(n):
         min_val = INF
@@ -109,18 +112,18 @@ def reduce_matrix(matrix):
         for j in range(2):
             tmp_min = INF
             for k in range(4):
-                tmp_min = min(tmp_min, matrix[4*i+k+2][j])
+                tmp_min = min(tmp_min, matrix[4 * i + k + 2][j])
             min_val = min(tmp_min, min_val)
         # The rest block
         for j in range(n):
-            tmp_min = get_block_min(4*i+2, 4*j+2, matrix)
+            tmp_min = get_block_min(4 * i + 2, 4 * j + 2, matrix)
             min_val = min(tmp_min, min_val)
         if min_val == INF or min_val == 0:
             continue
         for j in range(4):
-            for k in range(4*n+2):
-                if matrix[4*i+j+2][k] != INF:
-                    matrix[4*i+j+2][k] -= min_val
+            for k in range(4 * n + 2):
+                if matrix[4 * i + j + 2][k] != INF:
+                    matrix[4 * i + j + 2][k] -= min_val
         res += min_val
 
     # Column reduction
@@ -128,48 +131,72 @@ def reduce_matrix(matrix):
         min_val = INF
         # The first two column
         for j in range(2):
-            tmp_min = min(matrix[j][4*i+2:4*i+6])
+            tmp_min = min(matrix[j][4 * i + 2:4 * i + 6])
             min_val = min(tmp_min, min_val)
         # The rest block
         for j in range(n):
-            tmp_min = get_block_min(4*j+2, 4*i+2, matrix)
+            tmp_min = get_block_min(4 * j + 2, 4 * i + 2, matrix)
             min_val = min(tmp_min, min_val)
         if min_val == INF or min_val == 0:
             continue
         for j in range(4):
-            for k in range(4*n+2):
-                if matrix[k][4*i+j+2] != INF:
-                    matrix[k][4*i+j+2] -= min_val
+            for k in range(4 * n + 2):
+                if matrix[k][4 * i + j + 2] != INF:
+                    matrix[k][4 * i + j + 2] -= min_val
         res += min_val
+    # print(res)
     return res
 
 
-def getAdjacency(start, end, items, nodes):
-    n = len(items)
-    dist_matrix = [[INF] * (n + 2) for _ in range(n + 2)]
-    dist_matrix[0][1] = 0
-    dist_matrix[1][0] = 0
-    for i in range(n):
-        item = items[i]
-        dist_start = distance(nodes, start, item)
-        dist_end = distance(nodes, end, item)
-        dist_matrix[0][i+2] = dist_start
-        dist_matrix[i+2][0] = dist_start
-        dist_matrix[1][i + 2] = dist_end
-        dist_matrix[i + 2][1] = dist_end
-    for i in range(2, n + 2):
-        for j in range(i + 1, n + 2):
-            item1 = items[i - 2]
-            item2 = items[j - 2]
-            dist = distance(nodes, item1, item2)
+
+dist_arr = [1, 0, -1, 0, 1]
+
+
+def getAdjacency(start, items, nodes):
+    new_items = []
+    for i in range(len(items)):
+        x = math.floor(items[i][0])
+        y = math.floor(items[i][1])
+        if (x, y) not in new_items:
+            new_items.append((x, y))
+    global dist_arr
+    n = len(new_items)
+    dist_matrix = [[INF] * (4*n + 1) for _ in range(4*n + 1)]
+    access_points = []
+    for item in new_items:
+        x, y = item
+        for i in range(4):
+            new_x = x + dist_arr[i]
+            new_y = y + dist_arr[i + 1]
+            if isValid((new_x, new_y), nodes):
+                access_points.append((new_x, new_y))
+            else:
+                access_points.append(None)
+
+    for i in range(len(access_points)):
+        if access_points[i] != None:
+            dist_start = distance(nodes, start, access_points[i])
+            dist_matrix[0][i+1] = dist_start
+            dist_matrix[i+1][0] = dist_start
+
+    for i in range(1, 4 * n + 1):
+        point1 = access_points[i - 1]
+        if point1 == None:
+            continue
+        for j in range(i + 1, 4 * n + 1):
+            point2 = access_points[j - 1]
+            if point2 == None:
+                continue
+            dist = distance(nodes, point1, point2)
             dist_matrix[i][j] = dist
             dist_matrix[j][i] = dist
-    return dist_matrix
+    # print_matrix(dist_matrix)
+    # print(access_points)
+    return dist_matrix, access_points, new_items
 
 
-def branch_tsp(start, nodes, items, end):
-    print(items)
-    dist_matrix = getAdjacency(start, end, items, nodes)
+def branch_tsp(start, nodes, items):
+    dist_matrix, access_points, new_items = getAdjacency(start, items, nodes)
     pq = PriorityQueue()
     matrix = copy.deepcopy(dist_matrix)
     val = reduce_matrix(matrix)
@@ -179,36 +206,51 @@ def branch_tsp(start, nodes, items, end):
         'num': 0
     })
     pq.put(root)
-
     curBound = INF
     curNode = None
-    n = len(dist_matrix)
+    n = len(new_items)
     while not pq.empty():
         size = pq.qsize()
         for i in range(size):
             node = pq.get()
+            # print(node.bound)
             # End condition
-            if node.bound>=curBound:
-                print(curNode['path'])
-                return curNode['path'], curBound
-            if len(node['path']) == n:
+            if node.bound >= curBound:
+                for id in curNode.data['path']:
+                    if id > 1:
+                        print(access_points[id-1])
+                return curNode.data['path'], curBound
+            if len(node.data['path']) == n+1:
+                # print(node.bound, n+1)
                 if node.bound < curBound:
                     curBound = node.bound
                     curNode = node
                     continue
-            for j in range(n):
-                if j != node['num'] and j not in node['path']:
-                    newBound, newMatrix = move_multi(node['matrix'], node['num'], j)
+            for j in range(len(access_points)):
+                id = math.floor(j/4)
+                skip = False
+                for num in node.data['path']:
+                    if num > 1:
+                        compare_id = math.floor((num-1)/4)
+                        if compare_id == id:
+                            skip = True
+                            break
+                if not skip and node.data['matrix'][node.data['num']][j+1] != INF and access_points[j] is not None:
                     # Compute new bounds
-                    newVal = node['bound'] + node['matrix'][node['num']][j] + newBound
-                    newPath = copy.deepcopy(node['path'])
-                    newPath.append(j)
+                    newBound, newMatrix = move_multi(node.data['matrix'], node.data['num'], j+1)
+                    if node.data['num'] > 0:
+                        print('from', access_points[node.data['num']-1], 'to', access_points[j], node.data['matrix'][node.data['num']][j+1])
+                    newVal = node.bound + node.data['matrix'][node.data['num']][j+1] + newBound
+                    newPath = copy.deepcopy(node.data['path'])
+                    newPath.append(j+1)
                     pq.put(Node(newVal, {
                         'matrix': newMatrix,
                         'path': newPath,
-                        'num': j
+                        'num': j+1
                     }))
     return None, -1
+
+
 # matrix = [
 #     [INF, 0, 2, 3, 4, 5],
 #     [0, INF, 2, 3, 4, 5],
@@ -222,6 +264,8 @@ def branch_tsp(start, nodes, items, end):
 # print_matrix(matrix)
 
 dir_matrix = [1, 0, -1, 0, 1]
+
+
 def getLoc(location, nodes):
     locs = []
     x, y = location
@@ -234,9 +278,11 @@ def getLoc(location, nodes):
             locs.append((new_x, new_y))
     return locs
 
+
 def isValid(point, nodes):
     x, y = point
-    return 0 <= x < len(nodes)  and 0 <= y < len(nodes[0])
+    return 0 <= x < len(nodes) and 0 <= y < len(nodes[0]) and nodes[x][y] != 2
+
 
 class Node(object):
     def __init__(self, bound, data):
@@ -245,4 +291,6 @@ class Node(object):
 
     def __lt__(self, other):
         if self.bound == other.bound:
-            return len(self.data['path']) > len(other.data['path'])
+            return len(self.data['path']) < len(other.data['path'])
+        else:
+            return self.bound < other.bound

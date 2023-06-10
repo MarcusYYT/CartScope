@@ -223,9 +223,9 @@ def getItems():
         if choice == 1:
             tracemalloc.start()
             t = time.perf_counter()
-            shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list, worker)
+            shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list)
             duration = time.perf_counter() - t
-            print(shortest_route)
+            # print(shortest_route)
             # current, peak = tracemalloc.get_traced_memory()
             # tracemalloc.stop()
             route += shortest_route
