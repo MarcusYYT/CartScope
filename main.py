@@ -211,6 +211,7 @@ def getItems():
     # print('2 - Brute Force')
     print('1 - Branch and Bound')
     print('2 - Greedy')
+    print('3 - Choose for you')
     running_time_history_logger.calculateRunningTime(len(pickuploc_list))
     try:
         choice = eval(input())
@@ -219,13 +220,11 @@ def getItems():
         dis = 0
         # The duration of the running time of the algorithm
         duration = 0.0
-        # print(pickuploc_list)
         if choice == 1:
             tracemalloc.start()
             t = time.perf_counter()
             shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list)
             duration = time.perf_counter() - t
-            # print(shortest_route)
             current, peak = tracemalloc.get_traced_memory()
             tracemalloc.stop()
             route += shortest_route
@@ -234,6 +233,18 @@ def getItems():
             tracemalloc.start()
             t = time.perf_counter()
             shortest_route, shortest_dis = tsp.greedy_tsp(worker, nodes, pickuploc_list)
+            duration = time.perf_counter() - t
+            current, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+            route += shortest_route
+            dis += shortest_dis
+        elif choice == 3:
+            tracemalloc.start()
+            t = time.perf_counter()
+            if len(pickuploc_list) <= 10:
+                shortest_route, shortest_dis = tsp.branch_tsp(worker, nodes, pickuploc_list)
+            else:
+                shortest_route, shortest_dis = tsp.greedy_tsp(worker, nodes, pickuploc_list)
             duration = time.perf_counter() - t
             current, peak = tracemalloc.get_traced_memory()
             tracemalloc.stop()

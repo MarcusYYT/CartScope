@@ -236,37 +236,44 @@ def branch_tsp(start, nodes, items):
         # End condition
         if node.bound > curBound:
             res = []
-            for id in curNode.data['path']:
-                if id >= 1:
-                    res.append(access_points[id-1])
-            return res, curBound
+            dis = 0
+            path = curNode.data['path']
+            for i in range(1, len(curNode.data['path'])):
+                id = path[i]
+                res.append(access_points[id-1])
+                dis += dist_matrix[path[i-1]][id]
+
+            return res, dis
         if len(node.data['path']) == n+1:
             if node.bound < curBound:
                 curBound = node.bound
                 curNode = node
                 continue
-        for j in range(len(access_points)):
-            id = math.floor(j/4)
+        for i in range(len(new_items)):
             skip = False
             for num in node.data['path']:
                 if num >= 1:
-                    compare_id = math.floor((num-1)/4)
-                    if compare_id == id:
+                    compare_id = math.floor((num - 1) / 4)
+                    if compare_id == i:
                         skip = True
                         break
-            if not skip and node.data['matrix'][node.data['num']][j+1] != INF and access_points[j] is not None:
-                # Compute new bounds
-                newBound, newMatrix = move_multi(node.data['matrix'], node.data['num'], j+1)
-                # if node.data['num'] > 0:
-                    # print('from', access_points[node.data['num']-1], 'to', access_points[j], node.data['matrix'][node.data['num']][j+1])
-                newVal = node.bound + node.data['matrix'][node.data['num']][j+1] + newBound
-                newPath = copy.deepcopy(node.data['path'])
-                newPath.append(j+1)
-                pq.put(Node(newVal, {
-                    'matrix': newMatrix,
-                    'path': newPath,
-                    'num': j+1
-                }))
+            if skip:
+                continue
+            # Compute new bounds
+            newBound, newMatrix = move_multi(node.data['matrix'], node.data['num'], 4*i + 1)
+            for j in range(4):
+                convert_id = 4*i + j
+                if node.data['matrix'][node.data['num']][convert_id+1] != INF and access_points[convert_id] is not None:
+                    # if node.data['num'] > 0:
+                        # print('from', access_points[node.data['num']-1], 'to', access_points[j], node.data['matrix'][node.data['num']][j+1])
+                    newVal = node.bound + node.data['matrix'][node.data['num']][convert_id+1] + newBound
+                    newPath = copy.deepcopy(node.data['path'])
+                    newPath.append(convert_id+1)
+                    pq.put(Node(newVal, {
+                        'matrix': newMatrix,
+                        'path': newPath,
+                        'num': convert_id+1
+                    }))
     return None, -1
 
 #
