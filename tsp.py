@@ -104,45 +104,57 @@ def get_block_min(x, y, matrix):
 
 def reduce_matrix(matrix):
     res = 0
-    n = math.floor((len(matrix) - 2) / 4)
+    n = math.floor((len(matrix) - 1) / 4)
     # Row reduction
+    min_val = min(matrix[0])
+    if min_val != INF:
+        for i in range(len(matrix)):
+            if matrix[0][i] != INF:
+                matrix[0][i] -= min_val
+        res += min_val
     for i in range(n):
         min_val = INF
-        # The first two column
-        for j in range(2):
-            tmp_min = INF
-            for k in range(4):
-                tmp_min = min(tmp_min, matrix[4 * i + k + 2][j])
-            min_val = min(tmp_min, min_val)
+        # The first column
+        tmp_min = INF
+        for k in range(4):
+            tmp_min = min(tmp_min, matrix[4 * i + k + 1][0])
+        min_val = min(tmp_min, min_val)
         # The rest block
         for j in range(n):
-            tmp_min = get_block_min(4 * i + 2, 4 * j + 2, matrix)
+            tmp_min = get_block_min(4 * i + 1, 4 * j + 1, matrix)
             min_val = min(tmp_min, min_val)
         if min_val == INF or min_val == 0:
             continue
         for j in range(4):
-            for k in range(4 * n + 2):
-                if matrix[4 * i + j + 2][k] != INF:
-                    matrix[4 * i + j + 2][k] -= min_val
+            for k in range(4 * n + 1):
+                if matrix[4 * i + j + 1][k] != INF:
+                    matrix[4 * i + j + 1][k] -= min_val
         res += min_val
 
+    min_val = INF
+    for i in range(len(matrix)):
+        min_val = min(min_val, matrix[i][0])
+    if min_val != INF:
+        for i in range(len(matrix)):
+            if matrix[i][0] != INF:
+                matrix[i][0] -= min_val
+        res += min_val
     # Column reduction
     for i in range(n):
         min_val = INF
-        # The first two column
-        for j in range(2):
-            tmp_min = min(matrix[j][4 * i + 2:4 * i + 6])
-            min_val = min(tmp_min, min_val)
+        # The first column
+        tmp_min = min(matrix[0][4 * i + 1:4 * i + 5])
+        min_val = min(tmp_min, min_val)
         # The rest block
         for j in range(n):
-            tmp_min = get_block_min(4 * j + 2, 4 * i + 2, matrix)
+            tmp_min = get_block_min(4 * j + 1, 4 * i + 1, matrix)
             min_val = min(tmp_min, min_val)
         if min_val == INF or min_val == 0:
             continue
         for j in range(4):
-            for k in range(4 * n + 2):
-                if matrix[k][4 * i + j + 2] != INF:
-                    matrix[k][4 * i + j + 2] -= min_val
+            for k in range(4 * n + 1):
+                if matrix[k][4 * i + j + 1] != INF:
+                    matrix[k][4 * i + j + 1] -= min_val
         res += min_val
     # print(res)
     return res
@@ -213,7 +225,6 @@ def branch_tsp(start, nodes, items):
         size = pq.qsize()
         for i in range(size):
             node = pq.get()
-            # print(node.bound)
             # End condition
             if node.bound >= curBound:
                 for id in curNode.data['path']:
@@ -238,8 +249,8 @@ def branch_tsp(start, nodes, items):
                 if not skip and node.data['matrix'][node.data['num']][j+1] != INF and access_points[j] is not None:
                     # Compute new bounds
                     newBound, newMatrix = move_multi(node.data['matrix'], node.data['num'], j+1)
-                    if node.data['num'] > 0:
-                        print('from', access_points[node.data['num']-1], 'to', access_points[j], node.data['matrix'][node.data['num']][j+1])
+                    # if node.data['num'] > 0:
+                    #     print('from', access_points[node.data['num']-1], 'to', access_points[j], node.data['matrix'][node.data['num']][j+1])
                     newVal = node.bound + node.data['matrix'][node.data['num']][j+1] + newBound
                     newPath = copy.deepcopy(node.data['path'])
                     newPath.append(j+1)
@@ -251,17 +262,16 @@ def branch_tsp(start, nodes, items):
     return None, -1
 
 
-# matrix = [
-#     [INF, 0, 2, 3, 4, 5],
-#     [0, INF, 2, 3, 4, 5],
-#     [2, 2, INF, 3, 4, 5],
-#     [3, 3, 3, INF, 4, 5],
-#     [4, 4, 4, 4, INF, 5],
-#     [5, 5, 5, 5, 5, INF],
-# ]
-#
-# print(reduce_matrix(matrix))
-# print_matrix(matrix)
+matrix = [
+    [INF, 2, 3, 4, 5],
+    [2, INF, 3, 4, 5],
+    [3, 3, INF, 4, 5],
+    [4, 4, 4, INF, 5],
+    [5, 5, 5, 5, INF],
+]
+
+print(reduce_matrix(matrix))
+print_matrix(matrix)
 
 dir_matrix = [1, 0, -1, 0, 1]
 
