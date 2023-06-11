@@ -26,18 +26,18 @@ def distance(nodes, node1, node2):
 
 
 # Map the item location to a accessible lane position
-def getMappedLoc(location):
-    x = math.floor(location[0])
-    y = math.floor(location[1])
-    if x == 0:
-        return (1, y)
-    if y == 0:
-        return (x, 1)
-    if x == rows:
-        return (x - 1, y)
-    if y == columns:
-        return (x, y - 1)
-    return (x, y - 1)
+# def getMappedLoc(location):
+#     x = math.floor(location[0])
+#     y = math.floor(location[1])
+#     if x == 0:
+#         return (1, y)
+#     if y == 0:
+#         return (x, 1)
+#     if x == rows:
+#         return (x - 1, y)
+#     if y == columns:
+#         return (x, y - 1)
+#     return (x, y - 1)
 
 
 # Multiple access points of greedy
@@ -218,10 +218,8 @@ def branch_tsp(start, nodes, items):
     dist_matrix, access_points, new_items = getAdjacency(start, items, nodes)
     pq = PriorityQueue()
     matrix = copy.deepcopy(dist_matrix)
-    # print_matrix(dist_matrix)
     val = reduce_matrix(matrix)
-    # print(val)
-    # print_matrix(matrix)
+    # The root node to start the iteration
     root = Node(val, {
         'matrix': matrix,
         'path': [0],
@@ -242,7 +240,6 @@ def branch_tsp(start, nodes, items):
                 id = path[i]
                 res.append(access_points[id-1])
                 dis += dist_matrix[path[i-1]][id]
-
             return res, dis
         if len(node.data['path']) == n+1:
             if node.bound < curBound:
@@ -260,6 +257,7 @@ def branch_tsp(start, nodes, items):
             if skip:
                 continue
             # Compute new bounds
+            # Only compute once per shelf, reduce the number of computations.
             newBound, newMatrix = move_multi(node.data['matrix'], node.data['num'], 4*i + 1)
             for j in range(4):
                 convert_id = 4*i + j
@@ -276,44 +274,32 @@ def branch_tsp(start, nodes, items):
                     }))
     return None, -1
 
-#
-# matrix = [
-#     [INF, 2, 3, 4, 5],
-#     [2, INF, 3, 4, 5],
-#     [3, 3, INF, 4, 5],
-#     [4, 4, 4, INF, 5],
-#     [5, 5, 5, 5, INF],
-# ]
-#
-# print(reduce_matrix(matrix))
-# print_matrix(matrix)
-
 dir_matrix = [1, 0, -1, 0, 1]
 
 
-def getLoc(location, nodes):
-    locs = []
-    x, y = location
-    x = math.floor(x)
-    y = math.floor(y)
-    for i in range(4):
-        new_x = x + dir_matrix[i]
-        new_y = y + dir_matrix[i + 1]
-        if isValid([new_x, new_y], nodes) and nodes[new_x][new_y] != 2:
-            locs.append((new_x, new_y))
-    return locs
+# def getLoc(location, nodes):
+#     locs = []
+#     x, y = location
+#     x = math.floor(x)
+#     y = math.floor(y)
+#     for i in range(4):
+#         new_x = x + dir_matrix[i]
+#         new_y = y + dir_matrix[i + 1]
+#         if isValid([new_x, new_y], nodes) and nodes[new_x][new_y] != 2:
+#             locs.append((new_x, new_y))
+#     return locs
 
 
 def isValid(point, nodes):
     x, y = point
     return 0 <= x < len(nodes) and 0 <= y < len(nodes[0]) and nodes[x][y] != 2
 
-
+# The container of the information needed for the traversal.
 class Node(object):
     def __init__(self, bound, data):
         self.bound = bound
         self.data = data
-
+    # The comparison function for Priority Queue
     def __lt__(self, other):
         if self.bound == other.bound:
             return len(self.data['path']) < len(other.data['path'])
