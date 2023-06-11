@@ -42,28 +42,36 @@ def getMappedLoc(location):
 
 # Multiple access points of greedy
 def greedy_tsp(worker, nodes, items):
-    shelves = []
-    # get_shelves(items, nodes, shelves)
-    pre = worker
-    route = []
+    dist_matrix, access_points, new_items = getAdjacency(worker, items, nodes)
+    route = [0]
     length = 0
-    cur_shelf = None
-    while len(shelves) != 0:
-        min_dis = INF
-        access_point = None
-        for shelf in shelves:
-            locs = getLoc(shelf, nodes)
-            for loc in locs:
-                tmp_dis = distance(nodes, loc, pre)
-                if tmp_dis < min_dis:
-                    min_dis = tmp_dis
-                    access_point = loc
-                    cur_shelf = shelf
-        length += min_dis
-        route.append(access_point)
-        shelves.remove(cur_shelf)
-    length += distance(nodes, route[len(route) - 1], worker)
-    return route, length
+    pre_shelf = 0
+    while len(route) <= len(new_items):
+        cur_min = INF
+        cur_node = -1
+        for i in range(len(access_points)):
+            id = math.floor(i/4+1)
+            skip = False
+            for num in route:
+                if num > 0:
+                    tmp_id = math.floor((num-1)/4)+1
+                    if tmp_id == id:
+                        skip = True
+                        break
+            if skip:
+                continue
+            dis = dist_matrix[pre_shelf][i+1]
+            if dis < cur_min:
+                cur_min = dis
+                cur_node = i+1
+        route.append(cur_node)
+        length += cur_min
+    length += distance(nodes, access_points[route[len(route) - 1]-1], worker)
+    # print(route, length)
+    res = []
+    for i in range(1, len(route)):
+        res.append(access_points[route[i]-1])
+    return res, length
 
 
 def move_multi(matrix, x, y):
@@ -76,7 +84,7 @@ def move_multi(matrix, x, y):
     else:
         points_x.append(x)
     if y > 1:
-        id = math.floor((x - 1) / 4)
+        id = math.floor((y - 1) / 4)
         for i in range(1 + id * 4, 5 + id * 4):
             points_y.append(i)
     else:
@@ -157,13 +165,12 @@ def reduce_matrix(matrix):
                     matrix[k][4 * i + j + 1] -= min_val
         res += min_val
     # print(res)
+    # print_matrix(matrix)
     return res
 
 
 
 dist_arr = [1, 0, -1, 0, 1]
-
-
 def getAdjacency(start, items, nodes):
     new_items = []
     for i in range(len(items)):
@@ -211,7 +218,10 @@ def branch_tsp(start, nodes, items):
     dist_matrix, access_points, new_items = getAdjacency(start, items, nodes)
     pq = PriorityQueue()
     matrix = copy.deepcopy(dist_matrix)
+    # print_matrix(dist_matrix)
     val = reduce_matrix(matrix)
+    # print(val)
+    # print_matrix(matrix)
     root = Node(val, {
         'matrix': matrix,
         'path': [0],
@@ -219,59 +229,57 @@ def branch_tsp(start, nodes, items):
     })
     pq.put(root)
     curBound = INF
-    curNode = None
+    curNode  = None
     n = len(new_items)
     while not pq.empty():
-        size = pq.qsize()
-        for i in range(size):
-            node = pq.get()
-            # End condition
-            if node.bound >= curBound:
-                for id in curNode.data['path']:
-                    if id > 1:
-                        print(access_points[id-1])
-                return curNode.data['path'], curBound
-            if len(node.data['path']) == n+1:
-                # print(node.bound, n+1)
-                if node.bound < curBound:
-                    curBound = node.bound
-                    curNode = node
-                    continue
-            for j in range(len(access_points)):
-                id = math.floor(j/4)
-                skip = False
-                for num in node.data['path']:
-                    if num > 1:
-                        compare_id = math.floor((num-1)/4)
-                        if compare_id == id:
-                            skip = True
-                            break
-                if not skip and node.data['matrix'][node.data['num']][j+1] != INF and access_points[j] is not None:
-                    # Compute new bounds
-                    newBound, newMatrix = move_multi(node.data['matrix'], node.data['num'], j+1)
-                    # if node.data['num'] > 0:
-                    #     print('from', access_points[node.data['num']-1], 'to', access_points[j], node.data['matrix'][node.data['num']][j+1])
-                    newVal = node.bound + node.data['matrix'][node.data['num']][j+1] + newBound
-                    newPath = copy.deepcopy(node.data['path'])
-                    newPath.append(j+1)
-                    pq.put(Node(newVal, {
-                        'matrix': newMatrix,
-                        'path': newPath,
-                        'num': j+1
-                    }))
+        node = pq.get()
+        # End condition
+        if node.bound > curBound:
+            res = []
+            for id in curNode.data['path']:
+                if id >= 1:
+                    res.append(access_points[id-1])
+            return res, curBound
+        if len(node.data['path']) == n+1:
+            if node.bound < curBound:
+                curBound = node.bound
+                curNode = node
+                continue
+        for j in range(len(access_points)):
+            id = math.floor(j/4)
+            skip = False
+            for num in node.data['path']:
+                if num >= 1:
+                    compare_id = math.floor((num-1)/4)
+                    if compare_id == id:
+                        skip = True
+                        break
+            if not skip and node.data['matrix'][node.data['num']][j+1] != INF and access_points[j] is not None:
+                # Compute new bounds
+                newBound, newMatrix = move_multi(node.data['matrix'], node.data['num'], j+1)
+                # if node.data['num'] > 0:
+                    # print('from', access_points[node.data['num']-1], 'to', access_points[j], node.data['matrix'][node.data['num']][j+1])
+                newVal = node.bound + node.data['matrix'][node.data['num']][j+1] + newBound
+                newPath = copy.deepcopy(node.data['path'])
+                newPath.append(j+1)
+                pq.put(Node(newVal, {
+                    'matrix': newMatrix,
+                    'path': newPath,
+                    'num': j+1
+                }))
     return None, -1
 
-
-matrix = [
-    [INF, 2, 3, 4, 5],
-    [2, INF, 3, 4, 5],
-    [3, 3, INF, 4, 5],
-    [4, 4, 4, INF, 5],
-    [5, 5, 5, 5, INF],
-]
-
-print(reduce_matrix(matrix))
-print_matrix(matrix)
+#
+# matrix = [
+#     [INF, 2, 3, 4, 5],
+#     [2, INF, 3, 4, 5],
+#     [3, 3, INF, 4, 5],
+#     [4, 4, 4, INF, 5],
+#     [5, 5, 5, 5, INF],
+# ]
+#
+# print(reduce_matrix(matrix))
+# print_matrix(matrix)
 
 dir_matrix = [1, 0, -1, 0, 1]
 
