@@ -65,6 +65,7 @@ def greedy_tsp(worker, nodes, items):
                 cur_min = dis
                 cur_node = i+1
         route.append(cur_node)
+        pre_shelf = cur_node
         length += cur_min
     length += dist_matrix[0][route[len(route)-1]]
     # length += distance(nodes, access_points[route[len(route) - 1]-1], worker)
