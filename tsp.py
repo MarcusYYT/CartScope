@@ -66,7 +66,8 @@ def greedy_tsp(worker, nodes, items):
                 cur_node = i+1
         route.append(cur_node)
         length += cur_min
-    length += distance(nodes, access_points[route[len(route) - 1]-1], worker)
+    length += dist_matrix[0][route[len(route)-1]]
+    # length += distance(nodes, access_points[route[len(route) - 1]-1], worker)
     # print(route, length)
     res = []
     for i in range(1, len(route)):
@@ -240,6 +241,7 @@ def branch_tsp(start, nodes, items):
                 id = path[i]
                 res.append(access_points[id-1])
                 dis += dist_matrix[path[i-1]][id]
+            dis += dist_matrix[0][path[len(path)-1]]
             return res, dis
         if len(node.data['path']) == n+1:
             if node.bound < curBound:
